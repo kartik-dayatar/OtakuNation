@@ -1,0 +1,33 @@
+.layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+    background: var(--gradient-ambient);
+    transition: background var(--duration-normal) var(--ease-smooth);
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+/* Page Transition Wrapper */
+.page-transition-wrapper {
+    flex: 1;
+    /* Remove top padding as header is sticky, or keep if fixed? 
+       Header is 'position: sticky; top: 0'. 
+       So it takes up space in the flow. No extra padding needed usually.
+    */
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Footer adjustment */
+.footer {
+    width: 100%;
+}
