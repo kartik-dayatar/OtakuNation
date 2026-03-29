@@ -1,0 +1,365 @@
+.ot-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    min-height: 80vh;
+}
+
+.ot-back {
+    display: inline-block;
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.ot-back:hover {
+    color: var(--primary);
+}
+
+.ot-page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 8px;
+}
+
+.ot-page-sub {
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    font-size: 1.1rem;
+}
+
+.ot-status-badge {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #e2e8f0;
+    color: #64748b;
+    text-transform: capitalize;
+}
+
+.ot-status-badge.placed {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.ot-status-badge.processing {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.ot-status-badge.shipped {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.ot-status-badge.out_for_delivery {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.ot-status-badge.delivered {
+    background: #d1fae5;
+    color: #047857;
+}
+
+/* Progress Bar */
+.ot-progress {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    padding: 0 20px;
+}
+
+.ot-progress::before {
+    content: '';
+    position: absolute;
+    top: 25px;
+    /* Adjust based on icon size */
+    left: 40px;
+    right: 40px;
+    height: 4px;
+    background: #e2e8f0;
+    z-index: 0;
+}
+
+.ot-progress-fill {
+    content: '';
+    position: absolute;
+    top: 25px;
+    left: 40px;
+    height: 4px;
+    background: #16a34a;
+    z-index: 0;
+    transition: width 0.5s ease;
+}
+
+.ot-step {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.ot-step-icon {
+    width: 50px;
+    height: 50px;
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.3s;
+}
+
+.ot-step.active .ot-step-icon,
+.ot-step.done .ot-step-icon {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.ot-step-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.ot-step.active .ot-step-label {
+    color: var(--text-main);
+}
+
+/* Tracking Info Card */
+.ot-tracking {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+    border: 1px solid var(--border);
+}
+
+.ot-tracking-icon {
+    font-size: 2rem;
+}
+
+.ot-tracking-info {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Details Card */
+.ot-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.ot-card-title {
+    font-size: 1.2rem;
+    margin: 0 0 24px;
+    color: var(--text-main);
+}
+
+.ot-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+}
+
+.ot-detail-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.ot-detail-value {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.ot-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.ot-item:last-child {
+    border-bottom: none;
+}
+
+.ot-item-img {
+    width: 60px;
+    height: 60px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.ot-item-info {
+    flex: 1;
+}
+
+.ot-item-info h4 {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.ot-item-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.ot-item-price {
+    font-weight: 600;
+}
+
+.ot-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.95rem;
+}
+
+.ot-total-row.final {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+}
+
+/* Track Hero (Form Page) Styles from JSP */
+.track-hero {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    padding: 60px 20px;
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.track-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 500px;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+}
+
+.track-header {
+    margin-bottom: 32px;
+}
+
+.track-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.track-icon {
+    font-size: 2rem;
+}
+
+.track-subtitle {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.track-form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.track-input-wrapper {
+    position: relative;
+    background: #eff6ff;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.track-input-wrapper:focus-within {
+    background: #fff;
+    box-shadow: 0 0 0 2px #2563eb;
+}
+
+.track-input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 1.1rem;
+    z-index: 10;
+}
+
+.track-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 16px 16px 16px 48px;
+    font-size: 1rem;
+    color: #0f172a;
+    border-radius: 8px;
+    outline: none;
+}
+
+.track-input::placeholder {
+    color: #94a3b8;
+}
+
+.track-btn {
+    width: 100%;
+    padding: 16px;
+    background: #0066ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06);
+}
+
+.track-btn:hover {
+    background: #0052cc;
+}
+
+.error-msg {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
