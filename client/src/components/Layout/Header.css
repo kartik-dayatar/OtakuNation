@@ -1,0 +1,390 @@
+/* Scoped Header CSS */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #ffffff;
+    /* Assuming white bg as per typical navbar */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 2rem;
+}
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+}
+
+.logo-badge {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    margin-right: 10px;
+}
+
+.logo-bolt {
+    color: #ffffff;
+    font-size: 1.2rem;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+    font-family: 'Inter', sans-serif;
+}
+
+.brand-accent {
+    color: #2563eb;
+}
+
+.brand-tagline {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    border-left: 1px solid #e2e8f0;
+    padding-left: 12px;
+}
+
+.search-bar-container {
+    flex: 1;
+    max-width: 400px;
+    margin: 0;
+}
+
+.search-form {
+    display: flex;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+    padding: 4px 12px;
+    transition: all 0.2s ease;
+}
+
+.search-form:focus-within {
+    background: #fff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-form input {
+    border: none;
+    outline: none;
+    flex: 1;
+    padding: 4px;
+    font-size: 0.95rem;
+    background: transparent;
+}
+
+.search-form button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 1.1rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.search-form button:hover {
+    opacity: 1;
+}
+
+/* NAVIGATION */
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 0;
+}
+
+.main-nav a,
+.nav-dropdown-trigger {
+    text-decoration: none;
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.main-nav a:hover,
+.nav-dropdown-trigger:hover {
+    color: #2563eb;
+}
+
+/* ===== Categories Dropdown ===== */
+.nav-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nav-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.dropdown-arrow {
+    font-size: 0.65rem;
+    transition: transform 0.25s ease;
+    display: inline-block;
+}
+
+.nav-dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    min-width: 220px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+    padding: 8px 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 1000;
+}
+
+/* Invisible bridge so hover doesn't break when moving from trigger to menu */
+.dropdown-menu::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+}
+
+.nav-dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #334155;
+    border-radius: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+}
+
+.dropdown-menu a:hover {
+    background: #eff4ff;
+    color: #2563eb;
+}
+
+/* RIGHT ACTIONS */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.btn.primary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn.ghost {
+    background: transparent;
+    color: #334155;
+}
+
+.btn.ghost:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.icon-btn {
+    position: relative;
+    padding: 8px 10px !important;
+    font-size: 1.2rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 99px;
+    border: 2px solid #fff;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* ── AUTH CONTAINER (PREVENTS SHIFTING) ── */
+.auth-container {
+    width: 200px; /* Fixed width to securely contain both without shifting */
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.pre-login-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* ── POST-LOGIN USER MENU ── */
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 99px;
+    padding: 4px 14px 4px 4px;
+    transition: all 0.2s ease;
+    color: #1e3a8a;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.user-pill:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.user-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+    .site-header {
+        padding: 1rem;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .main-nav {
+        order: 3;
+        width: 100%;
+        margin: 0;
+        justify-content: center;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .search-bar-container {
+        order: 2;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+    }
+
+    .header-actions {
+        order: 1;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .logo-container {
+        margin-right: auto;
+    }
+
+    .dropdown-menu {
+        position: fixed;
+        /* Better for mobile overflow */
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        transform: translateY(100%);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        border-radius: 20px 20px 0 0;
+    }
+
+    .nav-dropdown:hover .dropdown-menu {
+        transform: translateY(0);
+    }
+}
