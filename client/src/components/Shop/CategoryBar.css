@@ -1,0 +1,67 @@
+.category-bar-container {
+    background-color: #f1f5f9;
+    /* slate-100 */
+    border-bottom: 1px solid #e2e8f0;
+    /* slate-200 */
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 0 24px;
+}
+
+.category-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    /* Fill container */
+    overflow-x: auto;
+    padding: 12px 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    max-width: 1600px;
+    /* Increased from 1280px to fill more space */
+    margin: 0 auto;
+}
+
+.category-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.category-item {
+    background: none;
+    border: none;
+    padding: 6px 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    /* slate-500 */
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+    transition: color 0.2s;
+}
+
+.category-item:hover {
+    color: #1e293b;
+    /* slate-800 */
+}
+
+.category-item.active {
+    color: #7c3aed;
+    /* violet-600 */
+}
+
+.active-indicator {
+    position: absolute;
+    bottom: -10px;
+    /* Move indicator flush with container border */
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #7c3aed;
+    border-radius: 99px 99px 0 0;
+    width: 100%;
+}
