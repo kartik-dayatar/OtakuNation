@@ -1,0 +1,260 @@
+/* ══════════════════════════════════════════════
+   AdminShared.css — Shared styles for all admin pages
+   Imported once via AdminLayout so every page inherits.
+   ══════════════════════════════════════════════ */
+
+/* ── Page Header ── */
+.admin-page-title {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.admin-page-subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ── Admin Panel Card ── */
+.admin-panel {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-panel.full-width {
+    width: 100%;
+}
+
+/* ── Table Container ── */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* ── Admin Table ── */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 0.9rem;
+}
+
+.admin-table thead {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-table thead th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.admin-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+}
+
+.admin-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.admin-table tbody td {
+    padding: 0.75rem 1rem;
+    color: #374151;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.admin-table tbody td input[type="checkbox"],
+.admin-table thead th input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #4f46e5;
+}
+
+/* ── Text Utilities ── */
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.fw-600 { font-weight: 600; }
+.price { color: #111827; }
+
+/* ── Status Pills (shared) ── */
+.status-pill {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-pill.status-active,
+.status-pill.status-fulfilled,
+.status-pill.status-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-pill.status-inactive,
+.status-pill.status-unfulfilled {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.status-pill.status-processing {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-pill.status-pending {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+/* ── Admin Pagination ── */
+.admin-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 0 0 12px 12px;
+}
+
+.pagination-info {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination-controls button {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pagination-controls button:hover:not(:disabled):not(.active) {
+    background: #f3f4f6;
+}
+
+.pagination-controls button.active {
+    background: #4f46e5;
+    color: #fff;
+    border-color: #4f46e5;
+}
+
+.pagination-controls button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ── Shared Buttons ── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-family: inherit;
+}
+
+.btn.primary {
+    background: #4f46e5;
+    color: #fff;
+}
+
+.btn.primary:hover {
+    background: #4338ca;
+}
+
+.btn.primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn.ghost {
+    background: transparent;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+}
+
+.btn.ghost:hover {
+    background: #f3f4f6;
+}
+
+.btn.text {
+    background: transparent;
+    color: #4f46e5;
+    border: none;
+}
+
+.btn.text:hover {
+    background: #f3f4f6;
+}
+
+.btn.small {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.85rem;
+}
+
+.flex-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mt-3 { margin-top: 1rem; }

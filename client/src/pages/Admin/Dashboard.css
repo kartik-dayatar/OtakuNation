@@ -1,0 +1,144 @@
+.admin-dashboard-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.metric-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.metric-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.metric-icon-wrap.revenue { background: #dcfce7; color: #16a34a; }
+.metric-icon-wrap.orders { background: #dbeafe; color: #2563eb; }
+.metric-icon-wrap.alerts { background: #fee2e2; color: #dc2626; }
+.metric-icon-wrap.customers { background: #f3e8ff; color: #9333ea; }
+
+.metric-info h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.metric-value {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.metric-trend {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.metric-trend.positive { color: #16a34a; }
+.metric-trend.negative { color: #dc2626; }
+.metric-trend.neutral { color: #6b7280; }
+
+.dashboard-split {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-split {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* .admin-panel moved to AdminShared.css */
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.panel-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.inventory-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.inventory-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.inventory-item:last-child {
+    border-bottom: none;
+}
+
+.inv-product {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.inv-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    background-color: #f3f4f6;
+}
+
+.inv-product h4 {
+    margin: 0 0 0.2rem 0;
+    font-size: 0.95rem;
+    color: #111827;
+}
+
+.inv-product p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.inv-status {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+}
+
+.inv-status.danger { background: #fee2e2; color: #dc2626; }
+.inv-status.warning { background: #fef9c3; color: #a16207; }
+
+/* .btn and .flex-icon moved to AdminShared.css */
