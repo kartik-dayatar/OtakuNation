@@ -1,0 +1,310 @@
+/* =============================================
+   Otaku Nation - Auth Layout (Light Theme Edition)
+   Visibility & Premium Sizing
+   ============================================= */
+
+.login-main {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    background-color: var(--color-bg, #f7f8fc); /* System Light Background */
+}
+
+.login-shell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: 960px;
+    width: 100%;
+    background: #ffffff; /* System Surface */
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05); /* Softer shadow for light mode */
+    padding: var(--space-2);
+    gap: var(--space-3);
+}
+
+/* Left Side - Vibrant Hero (Maintains brand energy even in light mode) */
+.auth-obsidian-hero {
+    /* Electric Vibrant Purple Gradient */
+    background: linear-gradient(165deg, #6366f1 0%, #a855f7 100%);
+    border-radius: var(--radius-lg);
+    padding: var(--space-24) var(--space-8) var(--space-8);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+}
+
+/* Subtle depth element for solid-color vibrancy */
+.auth-obsidian-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+}
+
+.auth-logo {
+    position: absolute;
+    top: var(--space-6);
+    left: var(--space-8);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.05em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Manrope', sans-serif;
+}
+
+.auth-logo::before {
+    content: '';
+    display: block;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+}
+
+.login-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: left;
+}
+
+.auth-obsidian-hero h2 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+}
+
+.auth-hero-sub {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: var(--space-6);
+}
+
+.auth-hero-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 90%;
+    text-align: left;
+}
+
+/* Right Side - Form Card */
+.login-card {
+    padding: var(--space-6) var(--space-8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #ffffff;
+}
+
+.login-card h1 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--color-text, #1e293b);
+    margin: 0 0 8px;
+}
+
+.login-subtitle {
+    color: var(--color-text-secondary, #64748b);
+    margin-bottom: var(--space-6);
+    font-size: 0.9rem;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Form Fields */
+.login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.login-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569; /* slate-600 */
+}
+
+.login-field .form-input {
+    background: #ffffff;
+    border: 1px solid #cbd5e1; /* slate-300 */
+    color: #0f172a; /* slate-900 */
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.login-field .form-input:placeholder {
+    color: #94a3b8;
+}
+
+.login-field .form-input:focus {
+    border-color: var(--color-primary, #4f46e5);
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.login-helper-text {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* Social Buttons */
+.auth-social-row {
+    display: flex;
+    gap: 12px;
+}
+
+.login-google-btn, .login-github-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1e293b;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.login-google-btn:hover, .login-github-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.login-google-icon-placeholder, .login-github-icon-placeholder {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-google-icon-placeholder { background: #4285F4; }
+.login-github-icon-placeholder { background: #000; color: #fff; font-weight: 800; }
+
+/* Divider */
+.login-or {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+}
+
+.login-or span {
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+.login-or p {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Utilities */
+.login-row-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.login-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+    cursor: pointer;
+}
+
+.login-remember input[type="checkbox"] {
+    accent-color: var(--color-primary, #4f46e5);
+}
+
+.login-link-small {
+    color: var(--color-primary, #4f46e5);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-primary-submit {
+    background: var(--color-primary, #4f46e5) !important;
+    color: #ffffff !important;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: var(--radius-md);
+    margin-top: 8px;
+    cursor: pointer;
+    border: none;
+}
+
+.auth-primary-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.login-bottom-text {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+/* Register Specific Layouts */
+.register-fields-row {
+    display: flex;
+    gap: 12px;
+}
+
+.register-fields-row > * {
+    flex: 1;
+}
+
+/* Responsiveness Refined */
+@media (max-width: 900px) {
+    .login-shell {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+    }
+    .auth-obsidian-hero { display: none; }
+}
+
+@media (max-height: 750px) {
+    .login-main { padding: var(--space-2); }
+    .login-shell { max-width: 900px; }
+}
