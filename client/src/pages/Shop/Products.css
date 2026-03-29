@@ -1,0 +1,87 @@
+.shop-container {
+    background-color: #f8fafc;
+    /* bg-slate-50 */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.shop-layout {
+    width: 100%;
+    /* Full width */
+    display: grid;
+    grid-template-columns: 256px 1fr;
+    /* Fixed 64px (w-64 equivalent) sidebar */
+    position: relative;
+    align-items: start;
+}
+
+/* Sidebar styles moved to ShopSidebar.css */
+
+.product-grid-section {
+    padding: 40px;
+    /* Reduced horizontal padding for full-width feel */
+    width: 100%;
+}
+
+.shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 24px;
+}
+
+/* ... existing styles ... */
+
+/* Shop Grid */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    /* 4 Columns fixed */
+    gap: 40px;
+    /* Wide horizontal gap */
+    row-gap: 64px;
+    /* Very airy vertical spacing */
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 0;
+    grid-column: 1 / -1;
+    color: #64748b;
+    font-size: 1.1rem;
+}
+
+.clear-filters-btn {
+    margin-top: 16px;
+    padding: 8px 24px;
+    background: #0f172a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.clear-filters-btn:hover {
+    background: #334155;
+}
+
+@media (max-width: 1024px) {
+    .shop-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 cols on tablet */
+    }
+
+    /* In actual implementation, sidebar would be a drawer on mobile */
+    /* For now, simplified mobile view */
+}

@@ -1,0 +1,543 @@
+/* =============================================
+   NEW ARRIVALS — Premium Drop Experience
+   OtakuNation Anime Merchandise Store
+   ============================================= */
+
+/* Main layout overrides were handled in reset, specific here */
+.na-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* =============================================
+   1. PREMIUM HERO
+   ============================================= */
+.na-hero {
+    position: relative;
+    width: 100%;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.na-hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #030712 0%, #0f172a 30%, #1e1b4b 60%, #0f172a 100%);
+    z-index: 0;
+}
+
+.na-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg,
+            rgba(37, 99, 235, 0.08),
+            rgba(124, 58, 237, 0.12),
+            rgba(37, 99, 235, 0.06),
+            rgba(6, 182, 212, 0.1));
+    background-size: 400% 400%;
+    animation: heroGradient 10s ease infinite;
+    z-index: 1;
+}
+
+@keyframes heroGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.na-hero-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    height: 500px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.15), transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.na-hero-content {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    animation: heroFadeIn 1s ease-out;
+}
+
+@keyframes heroFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.na-hero-tag {
+    display: inline-block;
+    background: rgba(124, 58, 237, 0.2);
+    border: 1px solid rgba(124, 58, 237, 0.4);
+    color: #a78bfa;
+    padding: 6px 20px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 24px;
+}
+
+.na-hero-title {
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    text-shadow: 0 0 60px rgba(124, 58, 237, 0.3);
+}
+
+.na-hero-sub {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.55);
+    max-width: 440px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+}
+
+.na-hero-cta {
+    display: inline-block;
+    padding: 14px 36px;
+    background: #7c3aed;
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.25s ease;
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.35);
+}
+
+.na-hero-cta:hover {
+    background: #6d28d9;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 40px rgba(124, 58, 237, 0.45);
+}
+
+
+/* =============================================
+   2. COUNTDOWN STRIP
+   ============================================= */
+.na-countdown-strip {
+    background: #0f172a;
+    border-top: 1px solid rgba(124, 58, 237, 0.2);
+    border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.na-countdown-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 20px 0;
+    flex-wrap: wrap;
+}
+
+.na-countdown-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.na-timer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.na-timer-unit {
+    text-align: center;
+    background: rgba(124, 58, 237, 0.12);
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    border-radius: 10px;
+    padding: 8px 14px;
+    min-width: 60px;
+}
+
+.na-timer-unit span {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.na-timer-unit small {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 3px;
+    display: block;
+}
+
+.na-timer-sep {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+
+/* =============================================
+   3. FEATURED DROP
+   ============================================= */
+.na-featured-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+}
+
+.na-featured-card {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s ease;
+}
+
+.na-featured-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(124, 58, 237, 0.15);
+}
+
+.na-featured-img {
+    height: 260px;
+    position: relative;
+}
+
+.na-featured-info {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.na-drop-label {
+    display: inline-block;
+    width: fit-content;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7c3aed;
+    background: #f3f0ff;
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+
+.na-featured-info h3 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--text-main, #0f172a);
+}
+
+.na-featured-desc {
+    font-size: 0.88rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.na-featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: auto;
+    padding-top: 12px;
+}
+
+.na-featured-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.na-featured-rating {
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.na-add-btn {
+    display: inline-block;
+    width: fit-content;
+    padding: 10px 20px;
+    background: #7c3aed;
+    color: #fff;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: all 0.25s ease;
+    margin-top: 8px;
+}
+
+.na-featured-card:hover .na-add-btn {
+    background: #6d28d9;
+}
+
+/* Side Cards */
+.na-side-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.na-side-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(124, 58, 237, 0.15);
+}
+
+.na-side-img {
+    height: 130px;
+    position: relative;
+}
+
+.na-side-info {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.na-side-info h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--text-main, #0f172a);
+}
+
+.na-side-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-top: auto;
+}
+
+
+/* =============================================
+   SHARED — Badge + Scarcity
+   ============================================= */
+.na-badge-glow {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #7c3aed;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    box-shadow: 0 0 18px rgba(124, 58, 237, 0.5);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 14px rgba(124, 58, 237, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 24px rgba(124, 58, 237, 0.65);
+    }
+}
+
+.na-scarcity {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    color: #fbbf24;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+
+/* =============================================
+   4. FULL PRODUCT GRID
+   ============================================= */
+.na-grid-section {
+    background: #f1f5f9;
+}
+
+.na-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.na-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.na-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(124, 58, 237, 0.15);
+}
+
+.na-card-img {
+    height: 170px;
+    position: relative;
+}
+
+.na-card-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.na-card-body h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+}
+
+.na-card-anime {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.na-card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.na-card-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.na-card-rating {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+
+/* =============================================
+   5. RESPONSIVE
+   ============================================= */
+@media (max-width: 900px) {
+    .na-hero {
+        min-height: 55vh;
+    }
+
+    .na-hero-title {
+        font-size: 2.4rem;
+    }
+
+    .na-featured-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .na-featured-card {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .na-featured-img {
+        height: 240px;
+    }
+}
+
+@media (max-width: 600px) {
+    .section {
+        padding: 50px 0;
+    }
+
+    .container {
+        padding: 0 16px;
+    }
+
+    .na-hero {
+        min-height: 45vh;
+    }
+
+    .na-hero-title {
+        font-size: 1.8rem;
+    }
+
+    .na-hero-sub {
+        font-size: 0.95rem;
+    }
+
+    .na-countdown-inner {
+        gap: 12px;
+    }
+
+    .na-timer-unit {
+        min-width: 50px;
+        padding: 6px 10px;
+    }
+
+    .na-timer-unit span {
+        font-size: 1.1rem;
+    }
+
+    .na-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .na-card-img {
+        height: 170px;
+    }
+
+    .na-side-img {
+        height: 130px;
+    }
+}
