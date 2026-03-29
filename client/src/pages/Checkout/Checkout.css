@@ -1,0 +1,235 @@
+/* Checkout & Payment Flow Styles */
+
+.checkout-page {
+    background-color: var(--bg-body, #f8fafc);
+    padding-bottom: 60px;
+}
+
+.checkout-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Progress Steps */
+.checkout-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    position: relative;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.checkout-steps::before {
+    content: "";
+    position: absolute;
+    top: 14px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border, #e2e8f0);
+    z-index: 0;
+}
+
+.step {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-body, #f8fafc);
+    padding: 0 10px;
+}
+
+.step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-surface, #fff);
+    border: 2px solid var(--border, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-circle {
+    border-color: var(--primary, #2563eb);
+    background: var(--primary, #2563eb);
+    color: #fff;
+    box-shadow: 0 0 0 4px var(--primary-soft, #eff6ff);
+}
+
+.step.completed .step-circle {
+    background: #10b981;
+    /* Success Green */
+    border-color: #10b981;
+    color: #fff;
+}
+
+.step-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted, #64748b);
+}
+
+.step.active .step-label {
+    color: var(--text-main, #0f172a);
+    font-weight: 600;
+}
+
+/* Forms */
+.form-card {
+    background: var(--bg-surface, #fff);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border, #e2e8f0);
+}
+
+.form-header {
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--bg-alt, #f1f5f9);
+    padding-bottom: 16px;
+}
+
+.form-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-main, #0f172a);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-main, #0f172a);
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    border-color: var(--primary, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-actions {
+    margin-top: 32px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+}
+
+/* Summary Row in Checkout */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: var(--text-muted, #64748b);
+}
+
+.summary-row.total {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border, #e2e8f0);
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+    font-size: 1.1rem;
+}
+
+/* Coupon Styles */
+#couponInput {
+    text-transform: uppercase;
+}
+
+.coupon-section {
+    margin: 20px 0;
+    padding: 16px 0;
+    border-top: 1px dashed var(--border, #e2e8f0);
+    border-bottom: 1px dashed var(--border, #e2e8f0);
+}
+
+.coupon-input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.coupon-btn {
+    padding: 10px 18px;
+    background: var(--primary, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.coupon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.coupon-btn:hover:not(:disabled) {
+    background: var(--primary-hover, #1d4ed8);
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-6px);
+    }
+
+    40% {
+        transform: translateX(6px);
+    }
+
+    60% {
+        transform: translateX(-4px);
+    }
+
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+.shake {
+    animation: shake 0.4s ease;
+}
