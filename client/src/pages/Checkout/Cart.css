@@ -1,0 +1,324 @@
+/* ── Mini Billing Section Enhancements ── */
+.cart-main {
+    padding-bottom: 60px;
+    background-color: var(--bg-body, #f8fafc);
+}
+
+.cart-shell {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 40px;
+}
+
+.cart-items-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.cart-heading {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+    display: flex;
+    align-items: center;
+}
+
+.cart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cart-row {
+    background: var(--bg-surface, #fff);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 16px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+.cart-row:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    border-color: var(--primary-soft, #bfdbfe);
+}
+
+.cart-product {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cart-image-slot {
+    width: 64px;
+    height: 64px;
+    background: var(--bg-alt, #f1f5f9);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.cart-product-info h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: var(--text-main, #0f172a);
+}
+
+.cart-product-info p {
+    font-size: 0.85rem;
+    color: var(--text-muted, #64748b);
+    margin: 0;
+}
+
+.cart-price {
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+    font-size: 1.1rem;
+}
+
+.cart-qty {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-alt, #f1f5f9);
+    padding: 6px 12px;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.cart-qty-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--text-muted, #64748b);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.cart-qty-btn:hover {
+    color: var(--primary, #2563eb);
+}
+
+.qty-value {
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.cart-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #ef4444;
+    opacity: 0.6;
+    transition: all 0.2s;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.cart-remove:hover {
+    opacity: 1;
+    background: #fee2e2;
+}
+
+/* Summary Section */
+.cart-summary {
+    background: var(--bg-surface, #fff);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 20px;
+    padding: 24px;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.cart-summary h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cart-summary h2::before {
+    content: '🧾';
+}
+
+.billing-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.billing-items-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.billing-items-list::-webkit-scrollbar-thumb {
+    background: var(--border, #e2e8f0);
+    border-radius: 4px;
+}
+
+.billing-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    color: var(--text-muted, #64748b);
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+}
+
+.billing-item:last-child {
+    border-bottom: none;
+}
+
+.billing-item-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 8px;
+}
+
+.billing-item-qty {
+    color: var(--primary, #2563eb);
+    font-weight: 600;
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.billing-item-total {
+    font-weight: 600;
+    color: var(--text-main, #333);
+    white-space: nowrap;
+}
+
+.cart-summary-divider {
+    height: 1px;
+    background: var(--border, #e2e8f0);
+    margin: 16px 0;
+}
+
+.cart-summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: var(--text-muted, #64748b);
+}
+
+.cart-summary-row.savings {
+    color: #10b981;
+}
+
+.cart-summary-row.savings span:last-child {
+    font-weight: 700;
+}
+
+.cart-summary-total {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border, #e2e8f0);
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--text-main, #0f172a);
+}
+
+.cart-count-badge {
+    background: var(--primary, #2563eb);
+    color: #fff;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.cart-row.removing {
+    opacity: 0;
+    transform: translateX(30px);
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.cart-empty-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted, #64748b);
+    grid-column: 1 / -1;
+}
+
+.cart-empty-message .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.cart-empty-message h2 {
+    margin-bottom: 8px;
+    color: var(--text-main, #0f172a);
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.cart-empty-message a {
+    display: inline-block;
+    margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+    .cart-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .cart-summary {
+        position: static;
+        order: -1;
+        /* Summary on top for mobile? Or keep bottom */
+    }
+
+    .cart-row {
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+    }
+
+    .cart-product {
+        grid-column: 1 / -1;
+    }
+
+    .cart-price {
+        justify-self: start;
+    }
+
+    .cart-qty {
+        justify-self: end;
+    }
+
+    .cart-remove {
+        grid-column: 2;
+        grid-row: 2;
+    }
+}
