@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import './MyOrders.css';
 
 export default function MyOrders() {
-    // Mock Data
     const orders = [
         {
             id: "ORD-2024-889",
@@ -11,30 +10,38 @@ export default function MyOrders() {
             status: "delivered",
             total: "₹6,640",
             items: ["Demon Slayer Haori", "Naruto Headband"],
-            image: "⚡"
+            images: [
+                '/src/assets/images/products/Haori.jpg',
+                '/src/assets/images/products/naruto-actionfigure.jpg',
+            ]
         },
         {
             id: "ORD-2024-762",
             date: "Sep 28, 2024",
             status: "shipped",
             total: "₹996",
-            items: ["Attack on Titan Keychain Set"],
-            image: "🗝️"
+            items: ["AOT Jacket"],
+            images: [
+                '/src/assets/images/products/AOT-jackate.jpg',
+            ]
         },
         {
             id: "ORD-2024-554",
             date: "Sep 15, 2024",
             status: "processing",
             total: "₹12,076",
-            items: ["One Piece Going Merry Model Kit", "Jujutsu Kaisen T-Shirt", "MHA Poster Set"],
-            image: "⛵"
+            items: ["Luffy Gear5 Action Figure", "Yuji Jacket", "JJK Manga"],
+            images: [
+                '/src/assets/images/products/luffy-gear5-action-figure.png',
+                '/src/assets/images/products/yuji-jackate.jpg',
+                '/src/assets/images/products/JJK-manga.jpg',
+            ]
         }
     ];
 
     return (
         <main className="my-orders-page">
             <div className="account-layout">
-                {/* Reusing Sidebar for consistency - typically this would be a shared component */}
                 <aside className="account-sidebar">
                     <ul className="sidebar-menu">
                         <li><Link to="/account" className="sidebar-link">Dashboard</Link></li>
@@ -63,9 +70,15 @@ export default function MyOrders() {
                                     <div className={`order-status ${order.status}`}>{order.status}</div>
                                 </div>
                                 <div className="order-body">
-                                    <div className="order-preview-icon">{order.image}</div>
+                                    {/* First product image */}
+                                    <div className="order-thumb">
+                                        <img src={order.images[0]} alt={order.items[0] || 'Product'} />
+                                    </div>
                                     <div className="order-details">
-                                        <h4>{order.items[0]} {order.items.length > 1 && `+ ${order.items.length - 1} more`}</h4>
+                                        <h4>
+                                            {order.items[0]}
+                                            {order.items.length > 1 && ` + ${order.items.length - 1} more`}
+                                        </h4>
                                         <p>Total: <strong>{order.total}</strong></p>
                                     </div>
                                     <Link to={`/order-tracking?orderId=${order.id}`} className="btn ghost-sm">

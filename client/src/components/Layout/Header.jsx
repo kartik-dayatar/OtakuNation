@@ -37,7 +37,7 @@ function Header({ variant = 'pre-login' }) {
                             <FaBolt className="logo-bolt" />
                         </div>
                         <span className="brand-name">
-                            ANIME <span className="brand-accent">STORE</span>
+                            OTAKU <span className="brand-accent">NATION</span>
                         </span>
                     </Link>
                 </div>

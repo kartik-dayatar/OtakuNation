@@ -21,9 +21,9 @@ export default function OrderTracking() {
             trackingId: "TRK889220456",
             estimatedDelivery: "Delivered on Oct 18, 2024",
             items: [
-                { name: "Demon Slayer Haori", desc: "Size: M · Qty: 1", price: "₹3,735", icon: <FaBolt color="#ffc107" /> },
-                { name: "Naruto Headband - Hidden Leaf", desc: "Qty: 1", price: "₹1,577", icon: <GiSpiralShell color="#ff4500" /> },
-                { name: "Mystery Anime Sticker Pack", desc: "Qty: 2", price: "₹1,328", icon: <FaBox color="#8b4513" /> }
+                { name: "Demon Slayer Haori", desc: "Size: M · Qty: 1", price: "₹3,735", image: '/src/assets/images/products/Haori.jpg' },
+                { name: "Naruto Headband - Hidden Leaf", desc: "Qty: 1", price: "₹1,577", image: '/src/assets/images/products/naruto-headband.jpg' },
+                { name: "Mystery Anime Sticker Pack", desc: "Qty: 2", price: "₹1,328", image: '/src/assets/images/products/poster.jpg' }
             ]
         },
         "ORD-2024-762": {
@@ -35,7 +35,7 @@ export default function OrderTracking() {
             trackingId: "TRK762887321",
             estimatedDelivery: "3-5 Business Days",
             items: [
-                { name: "Attack on Titan Keychain Set", desc: "Qty: 1", price: "₹996", icon: <FaKey color="#64748b" /> }
+                { name: "Attack on Titan Keychain Set", desc: "Qty: 1", price: "₹996", image: '/src/assets/images/products/AOT-jackate.jpg' }
             ]
         },
         "ORD-2024-554": {
@@ -47,9 +47,9 @@ export default function OrderTracking() {
             trackingId: "Awaiting shipment",
             estimatedDelivery: "5-7 Business Days (estimated)",
             items: [
-                { name: "One Piece Going Merry Model Kit", desc: "1:100 Scale · Qty: 1", price: "₹6,557", icon: <FaShip color="#3b82f6" /> },
-                { name: "Jujutsu Kaisen T-Shirt", desc: "Size: L · Qty: 1", price: "₹2,698", icon: <FaTag color="#ef4444" /> },
-                { name: "My Hero Academia Poster Set", desc: "A3 Size · Qty: 2", price: "₹2,822", icon: <FaPalette color="#8b5cf6" /> }
+                { name: "One Piece Going Merry Model Kit", desc: "1:100 Scale · Qty: 1", price: "₹6,557", image: '/src/assets/images/products/one-piece-wantedposter.png' },
+                { name: "Jujutsu Kaisen T-Shirt", desc: "Size: L · Qty: 1", price: "₹2,698", image: '/src/assets/images/products/yuji-jackate.jpg' },
+                { name: "My Hero Academia Poster Set", desc: "A3 Size · Qty: 2", price: "₹2,822", image: '/src/assets/images/products/deku-jackate.jpg' }
             ]
         }
     };
@@ -133,7 +133,7 @@ export default function OrderTracking() {
 
     return (
         <main className="ot-container">
-            <Link to="/orders" className="ot-back"><FaArrowLeft style={{ marginRight: '8px' }} /> Back to Orders</Link>
+            <Link to="/account" className="ot-back"><FaArrowLeft style={{ marginRight: '8px' }} /> Back to Orders</Link>
 
             <h1 className="ot-page-title">Order #{orderIdParam}</h1>
             <p className="ot-page-sub">
@@ -192,7 +192,9 @@ export default function OrderTracking() {
                 <h3 className="ot-card-title">Items Ordered</h3>
                 {items.map((item, j) => (
                     <div key={j} className="ot-item">
-                        <div className="ot-item-img">{item.icon}</div>
+                        <div className="ot-item-img">
+                            <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
                         <div className="ot-item-info">
                             <h4>{item.name}</h4>
                             <p>{item.desc}</p>

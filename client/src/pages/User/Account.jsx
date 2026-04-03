@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaThLarge, FaBox, FaUser, FaMapMarkerAlt, FaSignOutAlt, FaChevronRight, FaBolt, FaShip, FaKey } from 'react-icons/fa';
+import { FaThLarge, FaBox, FaUser, FaMapMarkerAlt, FaSignOutAlt, FaChevronRight } from 'react-icons/fa';
 import './Account.css';
 
 export default function Account() {
@@ -257,7 +257,6 @@ export default function Account() {
         );
     };
 
-    // Mock Orders for Demo
     const demoOrders = [
         {
             id: "ORD-2024-889",
@@ -265,23 +264,32 @@ export default function Account() {
             status: "delivered",
             total: "₹6,640",
             items: ["Demon Slayer Haori", "Naruto Headband"],
-            icon: <FaBolt color="#ffc107" />
+            images: [
+                '/src/assets/images/products/Haori.jpg',
+                '/src/assets/images/products/naruto-actionfigure.jpg',
+            ]
         },
         {
             id: "ORD-2024-762",
             date: "Sep 28, 2024",
             status: "shipped",
             total: "₹996",
-            items: ["Attack on Titan Keychain Set"],
-            icon: <FaKey color="#64748b" />
+            items: ["AOT Jacket"],
+            images: [
+                '/src/assets/images/products/AOT-jackate.jpg',
+            ]
         },
         {
             id: "ORD-2024-554",
             date: "Sep 15, 2024",
             status: "processing",
             total: "₹12,076",
-            items: ["One Piece Going Merry Model Kit", "Jujutsu Kaisen T-Shirt"],
-            icon: <FaShip color="#3b82f6" />
+            items: ["Luffy Gear5 Action Figure", "Yuji Jacket"],
+            images: [
+                '/src/assets/images/products/luffy-gear5-action-figure.png',
+                '/src/assets/images/products/yuji-jackate.jpg',
+                '/src/assets/images/products/JJK-manga.jpg',
+            ]
         }
     ];
 
@@ -304,17 +312,34 @@ export default function Account() {
                         gap: '20px'
                     }}>
                         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                            <div style={{
-                                width: '60px',
-                                height: '60px',
-                                background: '#f0f0f5',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '24px'
-                            }}>
-                                {order.icon}
+                            {/* Product image thumbnails */}
+                            <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                                {[order.images[0]].map((img, i) => (
+                                    <div key={i} style={{
+                                        width: '64px',
+                                        height: '64px',
+                                        borderRadius: '10px',
+                                        overflow: 'hidden',
+                                        border: '1px solid var(--border, #e2e8f0)',
+                                        background: '#f1f5f9',
+                                        flexShrink: 0
+                                    }}>
+                                        <img
+                                            src={img}
+                                            alt={order.items[i] || 'Product'}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                        />
+                                    </div>
+                                ))}
+                                {false && (
+                                    <div style={{
+                                        width: '64px', height: '64px', borderRadius: '10px',
+                                        border: '1px solid var(--border, #e2e8f0)',
+                                        background: '#f1f5f9', display: 'flex',
+                                        alignItems: 'center', justifyContent: 'center',
+                                        fontSize: '0.85rem', fontWeight: '700', color: '#64748b'
+                                    }}>+{order.images.length - 3}</div>
+                                )}
                             </div>
                             <div>
                                 <h4 style={{ margin: '0 0 4px', color: 'var(--color-text)' }}>{order.items[0]} {order.items.length > 1 && `+ ${order.items.length - 1} more`}</h4>

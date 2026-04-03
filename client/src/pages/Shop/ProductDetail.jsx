@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { FaHeart, FaRegHeart, FaShoppingCart, FaShieldAlt, FaUndo, FaLock, FaBolt } from 'react-icons/fa';
 import useCartStore from '../../store/cartStore';
 import useProductStore from '../../store/productStore';
+import useWishlistStore from '../../store/wishlistStore';
 import './ProductDetail.css';
 
 export default function ProductDetail() {
@@ -10,6 +12,8 @@ export default function ProductDetail() {
     const product = useProductStore((state) => state.getProductById(id));
     const products = useProductStore((state) => state.products);
     const addItem = useCartStore((s) => s.addItem);
+    const toggleWishlist = useWishlistStore((s) => s.toggleItem);
+    const isWishlisted = useWishlistStore((s) => s.isWishlisted(id));
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState(0);
     const [quantity, setQuantity] = useState(1);
@@ -110,26 +114,36 @@ export default function ProductDetail() {
                             <span className="qty-value">{quantity}</span>
                             <button type="button" className="qty-btn" onClick={() => setQuantity(quantity + 1)}>+</button>
                         </div>
-                        <button type="submit" className="btn primary" style={{ flex: 1 }}>Add to Cart</button>
-                        <button type="button" className="btn ghost icon-btn">❤️</button>
+                        <button type="submit" className="btn primary add-to-cart-btn" style={{ flex: 1 }}>
+                            <FaShoppingCart style={{ marginRight: '8px' }} />
+                            Add to Cart
+                        </button>
+                        <button
+                            type="button"
+                            className={`btn ghost icon-btn wishlist-toggle-btn ${isWishlisted ? 'wishlisted' : ''}`}
+                            onClick={() => toggleWishlist(product)}
+                            aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                        >
+                            {isWishlisted ? <FaHeart /> : <FaRegHeart />}
+                        </button>
                     </form>
 
                     {/* Trust Badges */}
                     <div className="trust-badges">
                         <div className="trust-item">
-                            <span className="trust-icon">🛡️</span>
+                            <FaShieldAlt className="trust-icon" />
                             <span>Official Merchandise</span>
                         </div>
                         <div className="trust-item">
-                            <span className="trust-icon">🔄</span>
+                            <FaUndo className="trust-icon" />
                             <span>30-Day Returns</span>
                         </div>
                         <div className="trust-item">
-                            <span className="trust-icon">🔒</span>
+                            <FaLock className="trust-icon" />
                             <span>Secure Checkout</span>
                         </div>
                         <div className="trust-item">
-                            <span className="trust-icon">⚡</span>
+                            <FaBolt className="trust-icon" />
                             <span>Fast Shipping</span>
                         </div>
                     </div>
