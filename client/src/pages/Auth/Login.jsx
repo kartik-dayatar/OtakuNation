@@ -33,18 +33,6 @@ export default function Login() {
                     <p className="login-subtitle">Enter your personal data to access your account.</p>
 
                     <form className="login-form" onSubmit={handleLogin}>
-                        <div className="auth-social-row">
-                            <button type="button" className="login-google-btn">
-                                <span className="login-google-icon-placeholder">G</span> Google
-                            </button>
-                            <button type="button" className="login-github-btn">
-                                <span className="login-github-icon-placeholder">GH</span> Github
-                            </button>
-                        </div>
-
-                        <div className="login-or">
-                            <span></span><p>Or</p><span></span>
-                        </div>
 
                         <label className="login-field">
                             <span className="login-label">Email</span>
@@ -76,7 +64,7 @@ export default function Login() {
                                 <input type="checkbox" name="remember" />
                                 <span>Remember me</span>
                             </label>
-                            <Link to="#" onClick={(e) => e.preventDefault()} className="login-link-small">Forgot password?</Link>
+                            <Link to="/forgot-password" className="login-link-small">Forgot password?</Link>
                         </div>
 
                         <button type="submit" className="btn primary login-btn-full auth-primary-submit">Log In</button>

@@ -29,8 +29,9 @@ const Wishlist      = lazy(() => import('./pages/User/Wishlist'));
 const MyOrders      = lazy(() => import('./pages/User/MyOrders'));
 
 // ── Auth Pages ─────────────────────────────────────────────────────────────
-const Login    = lazy(() => import('./pages/Auth/Login'));
-const Register = lazy(() => import('./pages/Auth/Register'));
+const Login          = lazy(() => import('./pages/Auth/Login'));
+const Register       = lazy(() => import('./pages/Auth/Register'));
+const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
 
 // ── Admin Pages ────────────────────────────────────────────────────────────
 const AdminLayout      = lazy(() => import('./components/Layout/Admin/AdminLayout'));
@@ -71,6 +72,7 @@ function App() {
                                 <Route path="/gift-cards"   element={<GiftCards />} />
                                 <Route path="/login"        element={<Login />} />
                                 <Route path="/register"     element={<Register />} />
+                                <Route path="/forgot-password" element={<ForgotPassword />} />
                                 <Route path="/logout"       element={<Logout />} />
                                 <Route path="*"             element={<NotFound />} />
                             </Route>

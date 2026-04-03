@@ -37,18 +37,6 @@ export default function Register() {
                     <p className="login-subtitle">Enter your personal data to create your account.</p>
 
                     <form className="login-form" onSubmit={handleRegister}>
-                        <div className="auth-social-row">
-                            <button type="button" className="login-google-btn">
-                                <span className="login-google-icon-placeholder">G</span> Google
-                            </button>
-                            <button type="button" className="login-github-btn">
-                                <span className="login-github-icon-placeholder">GH</span> Github
-                            </button>
-                        </div>
-
-                        <div className="login-or">
-                            <span></span><p>Or</p><span></span>
-                        </div>
 
                         <div className="register-fields-row">
                             <label className="login-field">

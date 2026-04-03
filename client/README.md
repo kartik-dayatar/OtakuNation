@@ -1,16 +1,85 @@
-# React + Vite
+# Otaku Nation - Client Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to the frontend application for **Otaku Nation**, a comprehensive e-commerce platform dedicated to anime merchandise. This application is built with modern web technologies, providing a fast, responsive, and seamless shopping experience.
 
-Currently, two official plugins are available:
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Technologies Used](#technologies-used)
+- [Key Features](#key-features)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Available Scripts](#available-scripts)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Project Overview
+The Otaku Nation client is a Single Page Application (SPA) designed to handle product browsing, cart management, user authentication, and order tracking. It was migrated to a modern React stack to improve performance, development speed, and maintainability.
 
-## React Compiler
+## Technologies Used
+- **Framework:** React.js
+- **Build Tool:** Vite
+- **Routing:** React Router v6
+- **State Management:** Zustand (Cart, Wishlist)
+- **Styling:** Vanilla CSS (Modular, Utility-first approach)
+- **Icons:** React Icons
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Key Features
+- **Dynamic Product Catalog:** View products, filter by categories, and review product details.
+- **Cart & Wishlist Management:** Persistent shopping cart and wishlist functionality powered by Zustand and local storage.
+- **Order Tracking:** Integrated UI to check the visual progress and status of previous purchases.
+- **User Dashboard:** Dedicated account area for user profiles, order history, and saved addresses.
+- **Admin Interface:** Layouts and templates designed for inventory management, customer support, and administrative settings.
+- **Responsive Design:** Fully optimized layouts for both mobile and desktop experiences.
 
-## Expanding the ESLint configuration
+## Project Structure
+```text
+client/
+├── public/                 # Static assets (favicons, etc.)
+├── src/
+│   ├── assets/             # Images, global styles, and fonts
+│   ├── components/         # Reusable UI components (Layout, UI elements)
+│   ├── pages/              # Route-specific page components
+│   │   ├── Admin/          # Admin dashboard pages
+│   │   ├── Auth/           # Login and Registration
+│   │   ├── Checkout/       # Cart, Payment, and Confirmation
+│   │   ├── General/        # Home, Contact, NotFound
+│   │   ├── Shop/           # Products, Product Details
+│   │   └── User/           # Account, Orders, Order Tracking, Wishlist
+│   ├── App.jsx             # Main application routing and entry point
+│   └── main.jsx            # React DOM rendering
+├── index.html              # HTML template
+├── package.json            # Project dependencies and scripts
+└── vite.config.js          # Vite configuration
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Getting Started
+
+### Prerequisites
+Make sure you have Node.js (version 16 or higher) installed on your system.
+
+### Installation
+1. Navigate to the client directory:
+   ```bash
+   cd client
+   ```
+2. Install the required dependencies:
+   ```bash
+   npm install
+   ```
+
+### Running the Application
+To start the local development server:
+```bash
+npm run dev
+```
+The application will be available at `http://localhost:5173`.
+
+## Available Scripts
+
+In the project directory, you can run:
+
+- `npm run dev`: Starts the Vite development server with Hot Module Replacement (HMR).
+- `npm run build`: Bundles the application for production into the `dist` folder.
+- `npm run preview`: Locally previews the production build.
+- `npm run lint`: Runs ESLint to find and fix code style issues.
+
+---
+*Built for the Otaku Nation e-commerce modernization initiative.*
