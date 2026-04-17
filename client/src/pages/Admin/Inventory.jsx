@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Download, Edit2, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useProductStore from '../../store/productStore';
 import './Inventory.css';
 
 function Inventory() {
-    const products = useProductStore((state) => state.products);
-    const deleteProduct = useProductStore((state) => state.deleteProduct);
+    const { products, deleteProduct, fetchProducts } = useProductStore();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
 
     const handleDelete = (id) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
@@ -64,7 +67,6 @@ function Inventory() {
                             <tr>
                                 <th width="40"><input type="checkbox" /></th>
                                 <th>Product</th>
-                                <th>SKU</th>
                                 <th>Price</th>
                                 <th>Stock</th>
                                 <th>Reviews</th>
@@ -92,12 +94,11 @@ function Inventory() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="mono">SKU-{product.id}</td>
                                         <td className="price fw-600">₹{product.price.toFixed(2)}</td>
                                         <td><span className={`stock-badge ${stockClass}`}>{inStockLabel}</span></td>
                                         <td>{Math.floor(Math.random() * 200)}</td>
                                         <td><span className="status-pill status-active">Active</span></td>
-                                        <td className="text-right flex-end">
+                                        <td className="text-right">
                                             <div className="action-menu">
                                                 <button 
                                                     className="icon-btn-small" 
@@ -117,7 +118,7 @@ function Inventory() {
                                 );
                             }) : (
                                 <tr>
-                                    <td colSpan="8" style={{textAlign: 'center', padding: '2rem', color: '#6b7280'}}>No products in inventory</td>
+                                    <td colSpan="7" style={{textAlign: 'center', padding: '2rem', color: '#6b7280'}}>No products in inventory</td>
                                 </tr>
                             )}
                         </tbody>

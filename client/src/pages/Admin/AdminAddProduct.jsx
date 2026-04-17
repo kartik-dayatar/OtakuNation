@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useProductStore from '../../store/productStore';
+import useAdminStore from '../../store/adminStore';
 import { useToast } from '../../components/ui/Toast';
 import './AdminAddProduct.css';
 
 function AdminAddProduct() {
     const navigate = useNavigate();
     const { addToast } = useToast();
-    const addProduct = useProductStore((state) => state.addProduct);
+    const { addProduct } = useProductStore();
+    const { series, fetchCategoriesAndSeries } = useAdminStore();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [tags, setTags] = useState(['anime', 'new arrival']);
     const [tagInput, setTagInput] = useState('');
     const [imagePreview, setImagePreview] = useState('');
+
+    useEffect(() => {
+        fetchCategoriesAndSeries();
+    }, [fetchCategoriesAndSeries]);
+
 
     const [formData, setFormData] = useState({
         name: '',
@@ -83,7 +90,7 @@ function AdminAddProduct() {
         setFormData(prev => ({...prev, image: ''}));
     };
 
-    const handleSubmit = (e, actionType) => {
+    const handleSubmit = async (e, actionType) => {
         e.preventDefault();
 
         if (!formData.name || !formData.description || !formData.animeSeries || !formData.category || !formData.price || !formData.sku || !formData.stock) {
@@ -94,22 +101,37 @@ function AdminAddProduct() {
         setIsSubmitting(true);
 
         const productData = {
-            id: formData.sku, // using SKU as ID for mock
-            name: formData.name,
-            price: parseFloat(formData.price),
-            originalPrice: formData.comparePrice ? parseFloat(formData.comparePrice) : null,
-            category: formData.category,
-            image: formData.image || imagePreview,
-            inStock: parseInt(formData.stock) > 0,
-            status: actionType === 'publish' ? 'Active' : 'Draft'
+            name:              formData.name,
+            description:       formData.description,
+            shortDescription:  formData.shortDesc,
+            animeSeries:       formData.animeSeries,  // slug — backend resolves to ObjectId
+            brand:             formData.brand,
+            category:          formData.category,     // slug — backend resolves to ObjectId
+            price:             parseFloat(formData.price),
+            comparePrice:      formData.comparePrice ? parseFloat(formData.comparePrice) : undefined,
+            costPrice:         formData.costPrice ? parseFloat(formData.costPrice) : undefined,
+            sku:               formData.sku,
+            stock:             parseInt(formData.stock),
+            lowStockThreshold: parseInt(formData.lowStockThreshold) || 5,
+            material:          formData.material,
+            image:             formData.image || imagePreview || '',
+            status:            actionType === 'publish' ? 'active' : 'draft',
+            isFeatured:        formData.featured,
+            isNewArrival:      formData.newArrival,
+            isBestSeller:      formData.bestSeller,
+            slug:              formData.slug,
+            tags:              tags,
         };
 
-        setTimeout(() => {
-            addProduct(productData);
-            setIsSubmitting(false);
+        try {
+            await addProduct(productData);
             addToast(`Product ${actionType === 'publish' ? 'published' : 'saved as draft'} successfully!`, 'success');
             navigate('/admin/inventory');
-        }, 600);
+        } catch (err) {
+            addToast('Failed to save product. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -152,7 +174,12 @@ function AdminAddProduct() {
                         <div className="form-row">
                             <div className="form-group">
                                 <label className="form-label">Anime Series <span className="required">*</span></label>
-                                <input type="text" name="animeSeries" value={formData.animeSeries} onChange={handleChange} className="form-input" placeholder="e.g. Jujutsu Kaisen" required />
+                                <select name="animeSeries" value={formData.animeSeries} onChange={handleChange} className="form-select" required>
+                                    <option value="" disabled>Select anime series</option>
+                                    {series.map(s => (
+                                        <option key={s._id} value={s.slug}>{s.name}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Brand / Manufacturer <span className="optional">(optional)</span></label>
