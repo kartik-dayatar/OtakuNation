@@ -1,14 +1,33 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Download, Eye, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import useAdminStore from '../../store/adminStore';
+import { useToast } from '../../components/ui/Toast';
 import './AdminCustomers.css';
 
 function AdminCustomers() {
-    const { customers, fetchCustomers } = useAdminStore();
+    const { customers, fetchCustomers, deleteCustomer } = useAdminStore();
+    const { addToast } = useToast();
+    const navigate = useNavigate();
+    const [isDeleting, setIsDeleting] = useState(null);
 
     useEffect(() => {
         fetchCustomers();
     }, [fetchCustomers]);
+
+    const handleDelete = async (id, name) => {
+        if (window.confirm(`Are you sure you want to delete the account for ${name}? This action cannot be undone.`)) {
+            setIsDeleting(id);
+            try {
+                await deleteCustomer(id);
+                addToast('Customer account deleted successfully', 'success');
+            } catch (err) {
+                addToast(err.message || 'Failed to delete customer', 'error');
+            } finally {
+                setIsDeleting(null);
+            }
+        }
+    };
 
     const getInitials = (name) => name.charAt(0).toUpperCase();
 
@@ -82,8 +101,21 @@ function AdminCustomers() {
                                     </td>
                                     <td className="text-right">
                                         <div className="action-menu">
-                                            <button className="icon-btn-small" title="View"><Eye size={16}/></button>
-                                            <button className="icon-btn-small" title="Delete"><Trash2 size={16}/></button>
+                                            <button
+                                                className="icon-btn-small"
+                                                title="View Details"
+                                                onClick={() => navigate(`/admin/customers/${customer.id}`)}
+                                            >
+                                                <Eye size={16}/>
+                                            </button>
+                                            <button 
+                                                className="icon-btn-small" 
+                                                title="Delete" 
+                                                onClick={() => handleDelete(customer.id, customer.name)}
+                                                disabled={isDeleting === customer.id}
+                                            >
+                                                <Trash2 size={16} style={{ color: isDeleting === customer.id ? '#9ca3af' : '#ef4444' }}/>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>

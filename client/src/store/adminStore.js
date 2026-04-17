@@ -12,7 +12,17 @@ const useAdminStore = create((set, get) => ({
         orders: 0,
         pendingOrders: 0,
         customers: 0,
-        lowStockItems: 0
+        lowStockItems: 0,
+        growthPercent: 0,
+        thisMonthRevenue: 0,
+        lastMonthRevenue: 0,
+        thisMonthOrders: 0,
+        todayRevenue: 0,
+        todayOrders: 0,
+        statusBreakdown: [],
+        weeklyData: [],
+        monthlyData: [],
+        topSelling: []
     },
     settings: {
         storeName: 'OtakuNation',
@@ -28,6 +38,8 @@ const useAdminStore = create((set, get) => ({
     series: [],
     orders: [],
     customers: [],
+    currentOrder: null,
+    currentCustomer: null,
     loading: false,
     error: null,
 
@@ -108,6 +120,35 @@ const useAdminStore = create((set, get) => ({
         }
     },
 
+    fetchOrderById: async (id) => {
+        set({ loading: true, error: null, currentOrder: null });
+        try {
+            const { data } = await axios.get(`http://localhost:5000/api/orders/${id}`, {
+                headers: useAuthStore.getState().getAuthHeader()
+            });
+            set({ currentOrder: data, loading: false });
+        } catch (err) {
+            set({ loading: false, error: err.response?.data?.message || 'Failed to fetch order details' });
+        }
+    },
+
+    updateOrderStatus: async (id, status) => {
+        set({ loading: true, error: null });
+        try {
+            const { data } = await axios.put(`http://localhost:5000/api/orders/${id}/status`, { status }, {
+                headers: useAuthStore.getState().getAuthHeader()
+            });
+            set((state) => ({
+                currentOrder: state.currentOrder ? { ...state.currentOrder, status: data.status } : null,
+                loading: false
+            }));
+            return data;
+        } catch (err) {
+            set({ loading: false, error: err.response?.data?.message || 'Failed to update order status' });
+            throw err;
+        }
+    },
+
     fetchCustomers: async () => {
         set({ loading: true, error: null });
         try {
@@ -135,6 +176,35 @@ const useAdminStore = create((set, get) => ({
             set({ customers: mappedCustomers, loading: false });
         } catch (err) {
             set({ loading: false, error: err.response?.data?.message || 'Failed to fetch customers' });
+        }
+    },
+    
+    deleteCustomer: async (id) => {
+        set({ loading: true, error: null });
+        try {
+            await axios.delete(`http://localhost:5000/api/users/${id}`, {
+                headers: useAuthStore.getState().getAuthHeader()
+            });
+            // Update local state by removing the deleted customer
+            set((state) => ({
+                customers: state.customers.filter(c => c.id !== id),
+                loading: false
+            }));
+        } catch (err) {
+            set({ loading: false, error: err.response?.data?.message || 'Failed to delete customer' });
+            throw err;
+        }
+    },
+
+    fetchCustomerById: async (id) => {
+        set({ loading: true, error: null, currentCustomer: null });
+        try {
+            const { data } = await axios.get(`http://localhost:5000/api/users/${id}`, {
+                headers: useAuthStore.getState().getAuthHeader()
+            });
+            set({ currentCustomer: data, loading: false });
+        } catch (err) {
+            set({ loading: false, error: err.response?.data?.message || 'Failed to fetch customer details' });
         }
     }
 }));
