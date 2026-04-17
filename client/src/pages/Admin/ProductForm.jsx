@@ -21,10 +21,13 @@ function ProductForm() {
         price: '',
         originalPrice: '',
         description: '',
-        image: '',
         badge: '',
+        sku: '',
+        stock: '',
         inStock: true
     });
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
 
     useEffect(() => {
         if (isEdit) {
@@ -37,10 +40,12 @@ function ProductForm() {
                     price: product.price || '',
                     originalPrice: product.originalPrice || '',
                     description: product.description || '',
-                    image: product.image || (product.images ? product.images[0] : ''),
                     badge: product.badge || '',
+                    sku: product.sku || '',
+                    stock: product.stockQuantity || product.stock || '',
                     inStock: product.inStock !== false
                 });
+                setImagePreview(product.image || '');
             } else {
                 addToast('Product not found', 'error');
                 navigate('/admin/inventory');
@@ -56,30 +61,51 @@ function ProductForm() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Basic validation
-        if (!formData.name || !formData.price || !formData.category) {
-            addToast('Please fill all required fields', 'error');
+        if (!formData.name || !formData.price || !formData.category || !formData.sku) {
+            addToast('Please fill all required fields (Name, Price, Category, SKU)', 'error');
             return;
         }
 
-        const productData = {
-            ...formData,
-            price: parseFloat(formData.price),
-            originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
-        };
-
-        if (isEdit) {
-            updateProduct(id, productData);
-            addToast('Product updated successfully!', 'success');
-        } else {
-            addProduct(productData);
-            addToast('Product added successfully!', 'success');
+        const data = new FormData();
+        data.append('name', formData.name);
+        data.append('category', formData.category);
+        data.append('subCategory', formData.subCategory);
+        data.append('price', formData.price);
+        data.append('originalPrice', formData.originalPrice);
+        data.append('description', formData.description);
+        data.append('badge', formData.badge);
+        data.append('sku', formData.sku);
+        data.append('stock', formData.stock);
+        data.append('inStock', formData.inStock);
+        
+        if (imageFile) {
+            data.append('image', imageFile);
         }
 
-        navigate('/admin/inventory');
+        try {
+            if (isEdit) {
+                await updateProduct(id, data);
+                addToast('Product updated successfully!', 'success');
+            } else {
+                await addProduct(data);
+                addToast('Product added successfully!', 'success');
+            }
+            navigate('/admin/inventory');
+        } catch (err) {
+            console.error(err);
+            addToast(err.response?.data?.message || 'Failed to save product', 'error');
+        }
     };
 
     return (
@@ -89,39 +115,56 @@ function ProductForm() {
             </h1>
 
             <form onSubmit={handleSubmit} className="admin-product-form">
-                <div className="form-group full-width">
-                    <label>Product Name *</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        placeholder="e.g. Gojo Satoru Figure"
-                    />
+                <div className="form-row">
+                    <div className="form-group">
+                        <label>Product Name *</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            placeholder="e.g. Gojo Satoru Figure"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>SKU *</label>
+                        <input
+                            type="text"
+                            name="sku"
+                            value={formData.sku}
+                            onChange={handleChange}
+                            required
+                            placeholder="e.g. FIG-GJS-01"
+                        />
+                    </div>
                 </div>
 
                 <div className="form-row">
                     <div className="form-group">
                         <label>Category *</label>
                         <select name="category" value={formData.category} onChange={handleChange} required>
-                            <option value="apparel">Apparel</option>
+                            <option value="clothing">Clothing</option>
                             <option value="figures">Figures</option>
                             <option value="manga">Manga</option>
                             <option value="accessories">Accessories</option>
-                            <option value="footwear">Footwear</option>
-                            <option value="home-decor">Home Decor</option>
-                            <option value="ukiyo-district">Ukiyo District</option>
+                            <option value="posters">Posters</option>
+                            <option value="collectibles">Collectibles</option>
+                            <option value="plushies">Plushies</option>
+                            <option value="stationery">Stationery</option>
+                            <option value="home_decor">Home & Décor</option>
                         </select>
                     </div>
                     <div className="form-group">
-                        <label>Sub Category</label>
+                        <label>Stock Quantity *</label>
                         <input
-                            type="text"
-                            name="subCategory"
-                            value={formData.subCategory}
+                            type="number"
+                            name="stock"
+                            value={formData.stock}
                             onChange={handleChange}
-                            placeholder="e.g. Premium PVC"
+                            required
+                            placeholder="0"
+                            min="0"
                         />
                     </div>
                 </div>
@@ -151,17 +194,15 @@ function ProductForm() {
                 </div>
 
                 <div className="form-group full-width">
-                    <label>Image URL</label>
+                    <label>Product Image</label>
                     <input
-                        type="url"
-                        name="image"
-                        value={formData.image}
-                        onChange={handleChange}
-                        placeholder="https://example.com/image.jpg"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
                     />
-                    {formData.image && (
+                    {imagePreview && (
                         <div className="image-preview" style={{ marginTop: '10px' }}>
-                            <img src={formData.image} alt="Preview" style={{ width: '100px', borderRadius: '8px' }} onError={(e) => { e.target.src = 'https://via.placeholder.com/100?text=Invalid+Image' }} />
+                            <img src={imagePreview} alt="Preview" style={{ width: '100px', borderRadius: '8px' }} onError={(e) => { e.target.src = 'https://via.placeholder.com/100?text=Invalid+Image' }} />
                         </div>
                     )}
                 </div>

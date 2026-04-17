@@ -15,6 +15,7 @@ function AdminAddProduct() {
     const [tags, setTags] = useState(['anime', 'new arrival']);
     const [tagInput, setTagInput] = useState('');
     const [imagePreview, setImagePreview] = useState('');
+    const [imageFile, setImageFile] = useState(null);
 
     useEffect(() => {
         fetchCategoriesAndSeries();
@@ -40,7 +41,6 @@ function AdminAddProduct() {
         sizes: '',
         colors: '',
         material: '',
-        image: '',
         status: 'draft',
         featured: false,
         newArrival: true,
@@ -64,10 +64,13 @@ function AdminAddProduct() {
                 slug: value.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
             }));
         }
+    };
 
-        // Auto-preview image if URL
-        if(name === 'image') {
-            setImagePreview(value);
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
         }
     };
 
@@ -87,7 +90,7 @@ function AdminAddProduct() {
 
     const removeImage = () => {
         setImagePreview('');
-        setFormData(prev => ({...prev, image: ''}));
+        setImageFile(null);
     };
 
     const handleSubmit = async (e, actionType) => {
@@ -100,31 +103,33 @@ function AdminAddProduct() {
 
         setIsSubmitting(true);
 
-        const productData = {
-            name:              formData.name,
-            description:       formData.description,
-            shortDescription:  formData.shortDesc,
-            animeSeries:       formData.animeSeries,  // slug — backend resolves to ObjectId
-            brand:             formData.brand,
-            category:          formData.category,     // slug — backend resolves to ObjectId
-            price:             parseFloat(formData.price),
-            comparePrice:      formData.comparePrice ? parseFloat(formData.comparePrice) : undefined,
-            costPrice:         formData.costPrice ? parseFloat(formData.costPrice) : undefined,
-            sku:               formData.sku,
-            stock:             parseInt(formData.stock),
-            lowStockThreshold: parseInt(formData.lowStockThreshold) || 5,
-            material:          formData.material,
-            image:             formData.image || imagePreview || '',
-            status:            actionType === 'publish' ? 'active' : 'draft',
-            isFeatured:        formData.featured,
-            isNewArrival:      formData.newArrival,
-            isBestSeller:      formData.bestSeller,
-            slug:              formData.slug,
-            tags:              tags,
-        };
+        const data = new FormData();
+        data.append('name', formData.name);
+        data.append('description', formData.description);
+        data.append('shortDescription', formData.shortDesc);
+        data.append('animeSeries', formData.animeSeries);
+        data.append('brand', formData.brand);
+        data.append('category', formData.category);
+        data.append('price', formData.price);
+        if (formData.comparePrice) data.append('comparePrice', formData.comparePrice);
+        if (formData.costPrice) data.append('costPrice', formData.costPrice);
+        data.append('sku', formData.sku);
+        data.append('stock', formData.stock);
+        data.append('lowStockThreshold', formData.lowStockThreshold || 5);
+        data.append('material', formData.material);
+        data.append('status', actionType === 'publish' ? 'active' : 'draft');
+        data.append('isFeatured', formData.featured);
+        data.append('isNewArrival', formData.newArrival);
+        data.append('isBestSeller', formData.bestSeller);
+        data.append('slug', formData.slug);
+        data.append('tags', JSON.stringify(tags));
+        
+        if (imageFile) {
+            data.append('image', imageFile);
+        }
 
         try {
-            await addProduct(productData);
+            await addProduct(data);
             addToast(`Product ${actionType === 'publish' ? 'published' : 'saved as draft'} successfully!`, 'success');
             navigate('/admin/inventory');
         } catch (err) {
@@ -315,32 +320,30 @@ function AdminAddProduct() {
                         <h2 className="form-section-title">🖼️ Product Images</h2>
                         
                         <div className="form-group">
-                            <label className="form-label">Image URL</label>
+                            <label className="form-label">Upload Product Image</label>
                             <input 
-                                type="url" 
-                                name="image" 
-                                value={formData.image} 
-                                onChange={handleChange} 
+                                type="file" 
+                                accept="image/*"
+                                onChange={handleFileChange} 
                                 className="form-input mb-3" 
-                                placeholder="Paste image URL here..." 
                             />
                         </div>
 
                         {imagePreview ? (
                             <div className="image-preview-row">
                                 <div className="image-preview-thumb w-full h-[200px] max-h-[200px]">
-                                    <img src={imagePreview} alt="Preview" onError={(e) => { e.target.src = 'https://via.placeholder.com/200?text=Invalid+URL'; }} />
+                                    <img src={imagePreview} alt="Preview" onError={(e) => { e.target.src = 'https://via.placeholder.com/200?text=Invalid+Image'; }} />
                                     <button type="button" className="remove-img" onClick={removeImage}>×</button>
                                 </div>
                             </div>
                         ) : (
                             <div className="image-upload-area">
                                 <span className="upload-icon">📷</span>
-                                <p className="upload-text">Paste a URL above</p>
-                                <p className="upload-hint">Upload is mock-only in UI, paste URL to preview.</p>
+                                <p className="upload-text">Select an image file</p>
+                                <p className="upload-hint">Supported formats: JPG, PNG, WEBP</p>
                             </div>
                         )}
-                        <p className="form-hint" style={{marginTop: '8px'}}>First image will be used as the main thumbnail.</p>
+                        <p className="form-hint" style={{marginTop: '8px'}}>The uploaded image will be used as the main thumbnail.</p>
                     </div>
 
                     {/* Product Status */}
