@@ -1,93 +1,138 @@
 .admin-dashboard-page {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.75rem;
 }
 
+/* ── Metrics Row ── */
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
 }
 
 .metric-card {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 1.5rem;
     display: flex;
     align-items: flex-start;
     gap: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.2s;
+}
+
+.metric-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+.metric-card--link:hover {
+    border-color: #6366f1;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.12);
 }
 
 .metric-icon-wrap {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    font-size: 1.1rem;
 }
 
-.metric-icon-wrap.revenue { background: #dcfce7; color: #16a34a; }
-.metric-icon-wrap.orders { background: #dbeafe; color: #2563eb; }
-.metric-icon-wrap.alerts { background: #fee2e2; color: #dc2626; }
-.metric-icon-wrap.customers { background: #f3e8ff; color: #9333ea; }
+.metric-icon-wrap.revenue {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+}
+
+.metric-icon-wrap.orders {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #1d4ed8;
+}
+
+.metric-icon-wrap.alerts {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #dc2626;
+}
+
+.metric-icon-wrap.customers {
+    background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+    color: #9333ea;
+}
+
+.metric-info {
+    flex: 1;
+    min-width: 0;
+}
 
 .metric-info h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.9rem;
+    margin: 0 0 0.35rem 0;
+    font-size: 0.8rem;
     color: #6b7280;
-    font-weight: 500;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .metric-value {
-    margin: 0 0 0.25rem 0;
-    font-size: 1.5rem;
+    margin: 0 0 0.35rem 0;
+    font-size: 1.6rem;
     font-weight: 700;
-    color: #111827;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    line-height: 1;
 }
 
 .metric-trend {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
-.metric-trend.positive { color: #16a34a; }
+.metric-trend.positive { color: #15803d; }
 .metric-trend.negative { color: #dc2626; }
 .metric-trend.neutral { color: #6b7280; }
 
+/* ── Dashboard Row (Orders + Alerts) ── */
 .dashboard-split {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
     align-items: start;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
     .dashboard-split {
         grid-template-columns: 1fr;
     }
 }
 
+/* ── Panel card ── */
 /* .admin-panel moved to AdminShared.css */
 
 .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 1.125rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .panel-header h2 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: #111827;
+    color: #0f172a;
+    letter-spacing: -0.2px;
 }
 
+/* ── Inventory alert list ── */
 .inventory-list {
     display: flex;
     flex-direction: column;
@@ -97,48 +142,75 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 0.875rem 1.5rem;
+    border-bottom: 1px solid #f8fafc;
+    transition: background 0.15s;
 }
 
 .inventory-item:last-child {
     border-bottom: none;
 }
 
+.inventory-item:hover {
+    background: #fafafa;
+}
+
 .inv-product {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.875rem;
 }
 
 .inv-img {
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: 9px;
     background-size: cover;
     background-position: center;
-    background-color: #f3f4f6;
+    background-color: #f1f5f9;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+}
+
+.inv-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 9px;
 }
 
 .inv-product h4 {
-    margin: 0 0 0.2rem 0;
-    font-size: 0.95rem;
+    margin: 0 0 0.15rem 0;
+    font-size: 0.875rem;
+    font-weight: 600;
     color: #111827;
+    white-space: nowrap;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .inv-product p {
     margin: 0;
-    font-size: 0.85rem;
-    color: #6b7280;
+    font-size: 0.78rem;
+    color: #9ca3af;
 }
 
 .inv-status {
-    font-size: 0.85rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 7px;
+    white-space: nowrap;
 }
 
-.inv-status.danger { background: #fee2e2; color: #dc2626; }
-.inv-status.warning { background: #fef9c3; color: #a16207; }
+.inv-status.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
 
-/* .btn and .flex-icon moved to AdminShared.css */
+.inv-status.warning {
+    background: #fef3c7;
+    color: #b45309;
+}
