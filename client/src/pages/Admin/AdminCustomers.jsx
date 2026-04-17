@@ -1,27 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Download, Eye, Trash2 } from 'lucide-react';
+import useAdminStore from '../../store/adminStore';
 import './AdminCustomers.css';
 
-const mockCustomers = [
-    { id: 'CUST-001', name: 'Sakura M.', email: 'sakura.m@example.com', orders: 5, spent: 124.50, joined: 'Today', status: 'Active', color: '#4f46e5' },
-    { id: 'CUST-002', name: 'Kenji R.', email: 'kenji.r@example.com', orders: 1, spent: 73.87, joined: '2 Days Ago', status: 'Active', color: '#6b7280' },
-    { id: 'CUST-003', name: 'Aiko T.', email: 'aiko123@example.com', orders: 14, spent: 452.00, joined: 'Last Week', status: 'Active', color: '#16a34a' },
-    { id: 'CUST-004', name: 'Haruto K.', email: 'h.kenjiro09@example.com', orders: 0, spent: 0.00, joined: 'Last Month', status: 'Inactive', color: '#9ca3af' },
-];
-
 function AdminCustomers() {
+    const { customers, fetchCustomers } = useAdminStore();
+
+    useEffect(() => {
+        fetchCustomers();
+    }, [fetchCustomers]);
+
     const getInitials = (name) => name.charAt(0).toUpperCase();
 
     return (
         <div className="admin-customers-page">
-            <div className="content-header flex-between mb-4">
-                <div>
-                    <h1 className="admin-page-title">Customers</h1>
-                    <p className="admin-page-subtitle">Manage customer accounts and view their purchase history.</p>
-                </div>
-                <button className="btn primary flex-icon">
-                    <span>➕</span> Add Customer
-                </button>
+            <div className="mb-4">
+                <h1 className="admin-page-title">Customers</h1>
+                <p className="admin-page-subtitle">Manage customer accounts and view their purchase history.</p>
             </div>
 
             <div className="admin-panel full-width">
@@ -63,7 +58,7 @@ function AdminCustomers() {
                             </tr>
                         </thead>
                         <tbody>
-                            {mockCustomers.map(customer => (
+                            {customers.length > 0 ? customers.map(customer => (
                                 <tr key={customer.id}>
                                     <td><input type="checkbox" /></td>
                                     <td>
@@ -85,28 +80,26 @@ function AdminCustomers() {
                                             {customer.status}
                                         </span>
                                     </td>
-                                    <td className="text-right flex-end">
+                                    <td className="text-right">
                                         <div className="action-menu">
                                             <button className="icon-btn-small" title="View"><Eye size={16}/></button>
                                             <button className="icon-btn-small" title="Delete"><Trash2 size={16}/></button>
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                            )) : (
+                                 <tr><td colSpan="7" style={{textAlign: 'center', padding: '2rem'}}>No customers found.</td></tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
 
                 <div className="admin-pagination">
-                    <span className="pagination-info">Showing 1 to 4 of 1,245 customers</span>
+                    <span className="pagination-info">Showing {customers.length} customers</span>
                     <div className="pagination-controls">
                         <button disabled>Previous</button>
                         <button className="active">1</button>
-                        <button>2</button>
-                        <button>3</button>
-                        <span>...</span>
-                        <button>125</button>
-                        <button>Next</button>
+                        <button disabled>Next</button>
                     </div>
                 </div>
             </div>

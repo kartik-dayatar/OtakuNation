@@ -1,101 +1,137 @@
 .admin-customers-page {
     display: flex;
     flex-direction: column;
+    gap: 0;
 }
 
+/* ── Toolbar ── */
 .admin-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
-    border-radius: 12px 12px 0 0;
-}
-
-.toolbar-left, .toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.admin-select {
-    padding: 0.5rem 1rem;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
     background: #fff;
-    font-size: 0.9rem;
-    color: #374151;
-    outline: none;
-    transition: border-color 0.2s;
+    border-radius: 14px 14px 0 0;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.admin-select:focus {
-    border-color: #4f46e5;
-}
-
-.table-customer-card {
+.toolbar-left,
+.toolbar-right {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.admin-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.45rem 0.875rem;
+    width: 220px;
+    transition: all 0.2s;
+}
+
+.admin-search-wrap:focus-within {
+    border-color: #6366f1;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+}
+
+.admin-search-wrap input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.85rem;
+    color: #374151;
+    font-family: inherit;
+    width: 100%;
+}
+
+.admin-search-wrap input::placeholder {
+    color: #9ca3af;
+}
+
+.admin-select {
+    padding: 0.5rem 0.875rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 0.85rem;
+    color: #374151;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    cursor: pointer;
+    height: 36px;
+}
+
+.admin-select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+}
+
+/* ── Customer table card ── */
+.table-customer-card {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
 }
 
 .table-avatar {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    flex-shrink: 0;
 }
 
 .tc-info {
     display: flex;
     flex-direction: column;
+    gap: 0.05rem;
 }
 
 .tc-info strong {
     color: #111827;
     font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1.3;
 }
 
 .tc-info span {
-    color: #6b7280;
-    font-size: 0.8rem;
+    color: #9ca3af;
+    font-size: 0.78rem;
 }
 
-.status-active { background: #dcfce7; color: #166534; }
-.status-inactive { background: #f3f4f6; color: #4b5563; }
-
-.action-menu {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-}
-
-.icon-btn-small {
-    background: transparent;
-    border: none;
-    color: #6b7280;
-    padding: 0.4rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
+/* ── Status dot pills for customers ── */
+.status-active,
+.status-inactive {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
-.icon-btn-small:hover {
+.status-active {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-inactive {
     background: #f3f4f6;
-    color: #4f46e5;
-}
-
-.flex-end {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
+    color: #6b7280;
 }

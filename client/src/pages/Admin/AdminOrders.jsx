@@ -1,44 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Download, Search } from 'lucide-react';
+import useAdminStore from '../../store/adminStore';
 import './AdminOrders.css';
 
-// Extended mock data to match JSP
-const mockOrders = [
-    { id: 'ORD-8902', date: 'Mar 9, 2026', time: '10:42 AM', customer: 'Sakura M.', email: 'sakura@example.com', total: 373.50, payment: 'Paid', fulfillment: 'Unfulfilled' },
-    { id: 'ORD-8901', date: 'Mar 9, 2026', time: '09:12 AM', customer: 'Kenji R.', email: 'kenji.r@mail.com', total: 738.70, payment: 'Paid', fulfillment: 'Processing' },
-    { id: 'ORD-8900', date: 'Mar 8, 2026', time: '04:30 PM', customer: 'Aiko T.', email: 'aiko.tanaka@example.jp', total: 157.70, payment: 'Paid', fulfillment: 'Delivered' },
-    { id: 'ORD-8899', date: 'Mar 8, 2026', time: '01:15 PM', customer: 'Haruto K.', email: 'haru99@mail.com', total: 1070.70, payment: 'Refunded', fulfillment: 'Cancelled' },
-    { id: 'ORD-8898', date: 'Mar 7, 2026', time: '11:05 AM', customer: 'Yuki S.', email: 'yuki.s@example.com', total: 549.00, payment: 'Unpaid', fulfillment: 'Pending' },
+// Tab definitions — maps tab label to which fulfillment statuses it includes
+const TABS = [
+    { label: 'All Orders',  statuses: null },
+    { label: 'Pending',     statuses: ['Pending'] },
+    { label: 'Processing',  statuses: ['Processing'] },
+    { label: 'Delivered',   statuses: ['Delivered'] },
+    { label: 'Cancelled',   statuses: ['Cancelled'] },
 ];
 
 function AdminOrders() {
     const [activeTab, setActiveTab] = useState('All Orders');
+    const [search, setSearch] = useState('');
+    
+    const { orders: mockOrders, fetchOrders } = useAdminStore();
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
 
     const getFulfillmentClass = (status) => {
-        switch(status) {
-            case 'Delivered': return 'status-delivered';
-            case 'Processing': return 'status-processing';
-            case 'Unfulfilled':
-            case 'Pending': return 'status-pending';
-            case 'Cancelled': return 'status-cancelled';
-            default: return '';
+        switch (status) {
+            case 'Delivered':   return 'status-delivered';
+            case 'Processing':  return 'status-processing';
+            case 'Pending':     return 'status-pending';
+            case 'Cancelled':   return 'status-cancelled';
+            default:            return '';
         }
     };
 
     const getPaymentClass = (status) => {
-        switch(status) {
-            case 'Paid': return 'payment-paid';
-            case 'Refunded': return 'payment-refunded';
-            case 'Unpaid': return 'payment-unpaid';
-            default: return '';
+        switch (status) {
+            case 'Paid':      return 'payment-paid';
+            case 'Refunded':  return 'payment-refunded';
+            case 'Unpaid':    return 'payment-unpaid';
+            default:          return '';
         }
     };
+
+    // Count per tab for the badge numbers
+    const tabCounts = useMemo(() => {
+        const counts = {};
+        TABS.forEach(({ label, statuses }) => {
+            counts[label] = statuses
+                ? mockOrders.filter(o => statuses.includes(o.fulfillment)).length
+                : mockOrders.length;
+        });
+        return counts;
+    }, [mockOrders]);
+
+    // Apply tab filter + search filter
+    const filteredOrders = useMemo(() => {
+        const currentTab = TABS.find(t => t.label === activeTab);
+        let result = currentTab?.statuses
+            ? mockOrders.filter(o => currentTab.statuses.includes(o.fulfillment))
+            : [...mockOrders];
+
+        if (search.trim()) {
+            const q = search.trim().toLowerCase();
+            result = result.filter(o =>
+                o.id.toLowerCase().includes(q) ||
+                o.customer.toLowerCase().includes(q) ||
+                o.email.toLowerCase().includes(q)
+            );
+        }
+
+        return result;
+    }, [activeTab, search, mockOrders]);
 
     return (
         <div className="admin-orders-page">
             <div className="content-header flex-between mb-4">
                 <div>
-                    <h1 className="admin-page-title">Order Returns & Fulfillment</h1>
+                    <h1 className="admin-page-title">Order Returns &amp; Fulfillment</h1>
                     <p className="admin-page-subtitle">Track, fulfill, and manage customer orders.</p>
                 </div>
                 <button className="btn ghost flex-icon">
@@ -47,17 +84,33 @@ function AdminOrders() {
             </div>
 
             <div className="admin-panel full-width">
-                {/* Toolbar - Tabs */}
+                {/* Status Tabs */}
                 <div className="admin-tabs-bar">
-                    {['All Orders', 'Unfulfilled', 'Processing', 'Completed'].map(tab => (
-                        <button 
-                            key={tab}
-                            className={`tab ${activeTab === tab ? 'active' : ''}`}
-                            onClick={() => setActiveTab(tab)}
+                    {TABS.map(({ label }) => (
+                        <button
+                            key={label}
+                            className={`tab ${activeTab === label ? 'active' : ''}`}
+                            onClick={() => setActiveTab(label)}
                         >
-                            {tab} {tab === 'Unfulfilled' && <span className="tab-count">24</span>}
+                            {label}
+                            {tabCounts[label] > 0 && (
+                                <span className="tab-count">{tabCounts[label]}</span>
+                            )}
                         </button>
                     ))}
+                </div>
+
+                {/* Search Bar */}
+                <div style={{ padding: '0.875rem 1.5rem', borderBottom: '1px solid #f1f5f9' }}>
+                    <div className="orders-search">
+                        <Search size={14} color="#9ca3af" />
+                        <input
+                            type="text"
+                            placeholder="Search by order ID, customer name or email…"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                        />
+                    </div>
                 </div>
 
                 <div className="table-container">
@@ -74,11 +127,11 @@ function AdminOrders() {
                             </tr>
                         </thead>
                         <tbody>
-                            {mockOrders.map(order => (
+                            {filteredOrders.length > 0 ? filteredOrders.map(order => (
                                 <tr key={order.id}>
                                     <td className="fw-600">{order.id}</td>
                                     <td className="td-date">
-                                        {order.date}<br/>
+                                        {order.date}
                                         <span>{order.time}</span>
                                     </td>
                                     <td>
@@ -99,25 +152,30 @@ function AdminOrders() {
                                     </td>
                                     <td className="price text-right fw-600">₹{order.total.toFixed(2)}</td>
                                     <td className="text-center">
-                                        <button className={`btn ${order.fulfillment === 'Unfulfilled' ? 'primary' : 'ghost'} small round-btn`}>
-                                            {order.fulfillment === 'Unfulfilled' ? 'Fulfill' : 'View'}
+                                        <button className={`btn ${order.fulfillment === 'Pending' ? 'primary' : 'ghost'} small round-btn`}>
+                                            {order.fulfillment === 'Pending' ? 'Fulfill' : 'View'}
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                            )) : (
+                                <tr>
+                                    <td colSpan="7" style={{ textAlign: 'center', padding: '2.5rem', color: '#9ca3af' }}>
+                                        No orders found{search ? ` for "${search}"` : ''}.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div className="admin-pagination">
-                    <span className="pagination-info">Showing 1 to 5 of 1,204 orders</span>
+                    <span className="pagination-info">
+                        Showing {filteredOrders.length} of {mockOrders.length} orders
+                        {activeTab !== 'All Orders' && ` · Filtered by: ${activeTab}`}
+                    </span>
                     <div className="pagination-controls">
                         <button disabled>Previous</button>
                         <button className="active">1</button>
-                        <button>2</button>
-                        <button>3</button>
-                        <span>...</span>
-                        <button>241</button>
                         <button>Next</button>
                     </div>
                 </div>

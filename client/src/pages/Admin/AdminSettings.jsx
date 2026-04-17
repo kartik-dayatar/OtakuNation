@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Save, Globe, IndianRupee, Palette, Mail } from 'lucide-react';
 import './AdminSettings.css';
 import { useToast } from '../../components/ui/Toast';
+import useAdminStore from '../../store/adminStore';
 
 function AdminSettings() {
     const { addToast } = useToast();
-    const [isSaving, setIsSaving] = useState(false);
+    const { settings: globalSettings, fetchSettings, updateSettings } = useAdminStore();
     
-    // Mock settings state
-    const [settings, setSettings] = useState({
-        storeName: 'OtakuNation',
-        contactEmail: 'support@otakunation.com',
-        phone: '+1 (555) 123-4567',
-        currency: 'INR',
-        taxRate: '8.5',
-        theme: 'System',
-        enableReviews: true,
-        maintenanceMode: false
-    });
+    // Local copy to edit before saving
+    const [settings, setSettings] = useState(globalSettings);
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
+
+    useEffect(() => {
+        setSettings(globalSettings);
+    }, [globalSettings]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -27,15 +28,17 @@ function AdminSettings() {
         }));
     };
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
         setIsSaving(true);
-        
-        // Mock save delay
-        setTimeout(() => {
-            setIsSaving(false);
+        try {
+            await updateSettings(settings);
             addToast('Settings saved successfully', 'success');
-        }, 800);
+        } catch (err) {
+            addToast('Failed to save settings', 'error');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -45,13 +48,13 @@ function AdminSettings() {
                     <h1 className="admin-page-title">Store Settings</h1>
                     <p className="admin-page-subtitle">Manage your store's global configuration and appearance.</p>
                 </div>
-                <button 
-                    className="btn btn-primary settings-save-btn" 
+                <button
+                    className="btn primary flex-icon"
                     onClick={handleSave}
                     disabled={isSaving}
                 >
-                    <Save size={18} />
-                    {isSaving ? 'Saving...' : 'Save Settings'}
+                    <Save size={16} />
+                    {isSaving ? 'Saving…' : 'Save Settings'}
                 </button>
             </div>
 
