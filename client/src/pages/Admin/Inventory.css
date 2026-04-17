@@ -91,7 +91,62 @@
     border: 1px solid #f1f5f9;
 }
 
-/* ── Inventory toolbar ── */
+/* ── Inventory Toolbar (overrides global admin-toolbar) ── */
+.admin-inventory-page .admin-toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fff;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.admin-inventory-page .toolbar-left {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.625rem;
+    flex-wrap: nowrap;
+}
+
+.admin-inventory-page .toolbar-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.625rem;
+    flex-wrap: nowrap;
+    margin-left: auto;
+}
+
+/* Better select styling for inventory toolbar */
+.admin-inventory-page .admin-select {
+    height: 36px;
+    padding: 0 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 0.84rem;
+    cursor: pointer;
+    outline: none;
+    min-width: 140px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-inventory-page .admin-select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: #fff;
+}
+
+.admin-inventory-page .admin-select.small {
+    min-width: 160px;
+}
+
+/* Legacy classes kept for compatibility */
 .inventory-toolbar {
     display: flex;
     justify-content: space-between;

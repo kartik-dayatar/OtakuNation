@@ -8,9 +8,20 @@ function Inventory() {
     const { products, deleteProduct, fetchProducts } = useProductStore();
     const navigate = useNavigate();
 
+    const [filters, setFilters] = React.useState({
+        category: 'all',
+        status: 'all',
+        sort: 'newest'
+    });
+
     useEffect(() => {
-        fetchProducts();
-    }, [fetchProducts]);
+        fetchProducts({ ...filters, adminView: true });
+    }, [fetchProducts, filters]);
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleDelete = (id) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
@@ -37,13 +48,25 @@ function Inventory() {
                 {/* Toolbar */}
                 <div className="admin-toolbar">
                     <div className="toolbar-left">
-                        <select className="admin-select" aria-label="Filter by Category">
+                        <select 
+                            className="admin-select" 
+                            name="category"
+                            value={filters.category}
+                            onChange={handleFilterChange}
+                            aria-label="Filter by Category"
+                        >
                             <option value="all">All Categories</option>
                             <option value="clothing">Clothing</option>
                             <option value="figures">Figures</option>
                             <option value="accessories">Accessories</option>
                         </select>
-                        <select className="admin-select" aria-label="Filter by Status">
+                        <select 
+                            className="admin-select" 
+                            name="status"
+                            value={filters.status}
+                            onChange={handleFilterChange}
+                            aria-label="Filter by Status"
+                        >
                             <option value="all">All Status</option>
                             <option value="active">Active</option>
                             <option value="draft">Draft</option>
@@ -52,10 +75,21 @@ function Inventory() {
                     </div>
                     <div className="toolbar-right">
                         <button className="btn text small flex-icon"><Download size={16}/> Export</button>
-                        <select className="admin-select small" aria-label="Sort Order">
+                        <select 
+                            className="admin-select small" 
+                            name="sort"
+                            value={filters.sort}
+                            onChange={handleFilterChange}
+                            aria-label="Sort Order"
+                        >
                             <option value="newest">Newest First</option>
-                            <option value="stock_low">Stock: Low to High</option>
+                            <option value="oldest">Oldest First</option>
                             <option value="price_high">Price: High to Low</option>
+                            <option value="price_low">Price: Low to High</option>
+                            <option value="stock_low">Stock: Low to High</option>
+                            <option value="stock_high">Stock: High to Low</option>
+                            <option value="name_asc">Name: A to Z</option>
+                            <option value="name_desc">Name: Z to A</option>
                         </select>
                     </div>
                 </div>
@@ -76,9 +110,9 @@ function Inventory() {
                         </thead>
                         <tbody>
                             {products.length > 0 ? products.map((product) => {
-                                const inStockLabel = product.inStock ? `${Math.floor(Math.random() * 50) + 1} in stock` : 'Out of stock';
-                                const stockClass = product.inStock ? 'in-stock' : 'out-stock';
-                                const imageSrc = product.image || product.images?.[0] || 'https://via.placeholder.com/50';
+                                const inStockLabel = product.stock > 0 ? `${product.stock} in stock` : 'Out of stock';
+                                const stockClass = product.stock > 0 ? 'in-stock' : 'out-stock';
+                                const imageSrc = product.image || 'https://via.placeholder.com/50';
 
                                 return (
                                     <tr key={product.id}>
@@ -90,14 +124,14 @@ function Inventory() {
                                                 </div>
                                                 <div className="tp-info">
                                                     <strong>{product.name}</strong>
-                                                    <span style={{textTransform: 'capitalize'}}>{product.category.replace('-', ' ')}</span>
+                                                    <span style={{textTransform: 'capitalize'}}>{product.category ? product.category.replace(/-/g, ' ') : 'Uncategorized'}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="price fw-600">₹{product.price.toFixed(2)}</td>
+                                        <td className="price fw-600">₹{product.price.toLocaleString()}</td>
                                         <td><span className={`stock-badge ${stockClass}`}>{inStockLabel}</span></td>
-                                        <td>{Math.floor(Math.random() * 200)}</td>
-                                        <td><span className="status-pill status-active">Active</span></td>
+                                        <td>{product.reviews || 0}</td>
+                                        <td><span className={`status-pill status-${product.status || 'active'}`}>{product.status || 'Active'}</span></td>
                                         <td className="text-right">
                                             <div className="action-menu">
                                                 <button 
