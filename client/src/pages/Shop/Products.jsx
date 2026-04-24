@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { categories } from '../../data/products';
 import useProductStore from '../../store/productStore';
 import ShopSidebar from '../../components/Shop/ShopSidebar';
 import CategoryBar from '../../components/Shop/CategoryBar';
@@ -14,9 +13,29 @@ export default function Products() {
     const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || 'all');
     const [selectedSubFilters, setSelectedSubFilters] = useState([]); // Renamed from sidebarCategories
     const [activeAnime, setActiveAnime] = useState([]);
-    const [priceRange, setPriceRange] = useState(20000); // Max price default
     const [sortBy, setSortBy] = useState('trending');
-    const products = useProductStore((state) => state.products);
+    const { products, fetchProducts, fetchCategories, fetchAnimeSeries, loading, categories, animeSeries } = useProductStore();
+
+    const maxProductPrice = useMemo(() => {
+        if (products.length === 0) return 20000;
+        return Math.max(...products.map(p => p.price));
+    }, [products]);
+
+    const [priceRange, setPriceRange] = useState(20000);
+
+    // Update priceRange if products are loaded and it's still at default
+    useEffect(() => {
+        if (products.length > 0 && priceRange === 20000) {
+            setPriceRange(maxProductPrice);
+        }
+    }, [products, maxProductPrice]);
+
+    // Fetch products, categories and anime series on mount 
+    useEffect(() => {
+        fetchProducts();
+        fetchCategories();
+        fetchAnimeSeries();
+    }, [fetchProducts, fetchCategories, fetchAnimeSeries]);
 
     // Handle Category Filter (Top Navbar)
     const toggleCategory = (cat) => {
@@ -80,11 +99,9 @@ export default function Products() {
 
             // 3. Anime Filter
             if (activeAnime.length > 0) {
-                const matches = activeAnime.some(anime =>
-                    p.name.toLowerCase().includes(anime.replace('-', ' ')) ||
-                    (p.description && p.description.toLowerCase().includes(anime.replace('-', ' ')))
-                );
-                if (!matches) return false;
+                if (!p.animeSeries || !activeAnime.includes(p.animeSeries)) {
+                    return false;
+                }
             }
 
             // 4. Price Filter
@@ -113,9 +130,20 @@ export default function Products() {
     // Sync state with URL params
     useEffect(() => {
         const category = searchParams.get('category') || 'all';
+        const anime = searchParams.get('anime') || 'all';
+
         setActiveCategory(category);
+        if (anime !== 'all') {
+            setActiveAnime([anime]);
+        } else {
+            setActiveAnime([]);
+        }
+
         setSelectedSubFilters([]); // Clear sub-filters on URL change
-    }, [searchParams]);
+
+        // Trigger fetch with full param set
+        fetchProducts({ category, anime });
+    }, [searchParams, fetchProducts]);
 
     return (
         <main className="shop-container">
@@ -128,6 +156,7 @@ export default function Products() {
                     activeCategory={activeCategory}
                     activeAnime={activeAnime}
                     priceRange={priceRange}
+                    maxPrice={maxProductPrice}
                     toggleCategory={toggleCategory}
                     toggleAnime={toggleAnime}
                     setPriceRange={setPriceRange}
@@ -159,14 +188,19 @@ export default function Products() {
                         </div>
                     </div>
 
-                    {filteredProducts.length > 0 ? (
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '100px 0', width: '100%' }}>
+                            <h3>Loading magical artifacts...</h3>
+                        </div>
+                    ) : filteredProducts.length > 0 ? (
                         <div className="products-grid">
                             {filteredProducts.map((product, index) => (
                                 <motion.div
-                                    key={product.id}
+                                    key={product._id || product.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3, delay: index * 0.05 }}
+                                    style={{ overflow: 'visible' }}
                                 >
                                     <ProductCard product={product} />
                                 </motion.div>

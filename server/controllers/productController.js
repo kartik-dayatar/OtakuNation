@@ -1,7 +1,7 @@
-const Product     = require("../models/Product");
-const Category    = require("../models/Category");
+const Product = require("../models/Product");
+const Category = require("../models/Category");
 const AnimeSeries = require("../models/AnimeSeries");
-const Review      = require("../models/Review");
+const Review = require("../models/Review");
 
 // ────────────────────────────────────────────────────
 // GET /api/products
@@ -9,10 +9,10 @@ const Review      = require("../models/Review");
 // ────────────────────────────────────────────────────
 const getProducts = async (req, res, next) => {
     try {
-        const { category, search, sort, status, adminView, page = 1, limit = 50 } = req.query;
+        const { category, anime, search, sort, status, adminView, page = 1, limit = 50 } = req.query;
 
         let filter = {};
-        
+
         // For standard users, only show active. Admins can see more via adminView param.
         if (adminView === 'true') {
             filter = {}; // Show all initially
@@ -40,29 +40,44 @@ const getProducts = async (req, res, next) => {
             }
         }
 
+        if (anime && anime !== "all") {
+            const seriesDoc = await AnimeSeries.findOne({ slug: anime.toLowerCase() });
+            if (seriesDoc) {
+                filter.animeSeries = seriesDoc._id;
+            } else {
+                filter.animeSeries = null;
+            }
+        }
+
         if (search) {
+            // Expand search to include Categories and Anime Series
+            const matchingCategories = await Category.find({ name: { $regex: search, $options: "i" } }).select('_id');
+            const matchingSeries = await AnimeSeries.find({ name: { $regex: search, $options: "i" } }).select('_id');
+
             filter.$or = [
-                { name:        { $regex: search, $options: "i" } },
+                { name: { $regex: search, $options: "i" } },
                 { description: { $regex: search, $options: "i" } },
+                { category: { $in: matchingCategories.map(c => c._id) } },
+                { animeSeries: { $in: matchingSeries.map(s => s._id) } }
             ];
         }
 
         const sortMap = {
-            newest:     { createdAt: -1 },
-            oldest:     { createdAt: 1 },
+            newest: { createdAt: -1 },
+            oldest: { createdAt: 1 },
             price_high: { price: -1 },
-            price_low:  { price:  1 },
-            price_asc:  { price:  1 },
+            price_low: { price: 1 },
+            price_asc: { price: 1 },
             price_desc: { price: -1 },
-            stock_low:  { stockQuantity: 1 },
+            stock_low: { stockQuantity: 1 },
             stock_high: { stockQuantity: -1 },
-            rating:     { ratingAvg: -1 },
-            name_asc:   { name: 1 },
-            name_desc:  { name: -1 },
+            rating: { ratingAvg: -1 },
+            name_asc: { name: 1 },
+            name_desc: { name: -1 },
         };
         const sortOption = sortMap[sort] || { createdAt: -1 };
 
-        const skip  = (Number(page) - 1) * Number(limit);
+        const skip = (Number(page) - 1) * Number(limit);
         const total = await Product.countDocuments(filter);
         const productsRaw = await Product.find(filter)
             .populate("category", "name slug hasSizeOption")
@@ -73,7 +88,7 @@ const getProducts = async (req, res, next) => {
 
         const products = productsRaw.map(p => {
             const primaryImg = p.images?.find(img => img.isPrimary) || p.images?.[0];
-            
+
             // Helper to ensure path is correct for frontend
             const resolveImgPath = (url) => {
                 if (!url) return null;
@@ -83,19 +98,19 @@ const getProducts = async (req, res, next) => {
 
             return {
                 ...p.toObject(),
-                id:           p._id,
-                category:     p.category ? p.category.slug : 'uncategorized',
+                id: p._id,
+                category: p.category ? p.category.slug : 'uncategorized',
                 categoryName: p.category ? p.category.name : 'Uncategorized',
-                animeSeries:  p.animeSeries ? p.animeSeries.slug : null,
+                animeSeries: p.animeSeries ? p.animeSeries.slug : null,
                 animeSeriesName: p.animeSeries ? p.animeSeries.name : null,
-                image:  resolveImgPath(primaryImg?.url),
+                image: resolveImgPath(primaryImg?.url),
                 images: p.images?.map(img => resolveImgPath(img.url)) || [],
-                badge:  p.badgeLabel,
+                badge: p.badgeLabel,
                 inStock: p.stockQuantity > 0,
-                stock:   p.stockQuantity,
+                stock: p.stockQuantity,
                 reviews: p.reviewCount,
-                rating:  p.ratingAvg,
-                sizes:   p.sizes?.map(s => s.sizeLabel) || [],
+                rating: p.ratingAvg,
+                sizes: p.sizes?.map(s => s.sizeLabel) || [],
             };
         });
 
@@ -128,19 +143,19 @@ const getProductById = async (req, res, next) => {
 
         const mappedProduct = {
             ...product.toObject(),
-            id:           product._id,
-            category:     product.category ? product.category.slug : 'uncategorized',
+            id: product._id,
+            category: product.category ? product.category.slug : 'uncategorized',
             categoryName: product.category ? product.category.name : 'Uncategorized',
-            animeSeries:  product.animeSeries ? product.animeSeries.slug : null,
+            animeSeries: product.animeSeries ? product.animeSeries.slug : null,
             animeSeriesName: product.animeSeries ? product.animeSeries.name : null,
-            image:  resolveImgPath(product.images?.[0]?.url),
+            image: resolveImgPath(product.images?.[0]?.url),
             images: product.images?.map(img => resolveImgPath(img.url)) || [],
-            badge:  product.badgeLabel,
+            badge: product.badgeLabel,
             inStock: product.stockQuantity > 0,
-            stock:   product.stockQuantity,
+            stock: product.stockQuantity,
             reviews: product.reviewCount,
-            rating:  product.ratingAvg,
-            sizes:   product.sizes?.map(s => s.sizeLabel) || [],
+            rating: product.ratingAvg,
+            sizes: product.sizes?.map(s => s.sizeLabel) || [],
         };
 
         res.json(mappedProduct);
@@ -181,7 +196,7 @@ const createProduct = async (req, res, next) => {
 
         // Handle File Upload or UI flat image string
         if (req.file) {
-             payload.images = [{ url: req.file.filename, isPrimary: true }];
+            payload.images = [{ url: req.file.filename, isPrimary: true }];
         } else if (payload.image && typeof payload.image === "string" && !payload.images) {
             payload.images = [{ url: payload.image, isPrimary: true }];
             delete payload.image;
@@ -189,7 +204,7 @@ const createProduct = async (req, res, next) => {
 
         // Convert inStock boolean and flat stock integer to stockQuantity
         if (payload.stock !== undefined) {
-             payload.stockQuantity = Number(payload.stock);
+            payload.stockQuantity = Number(payload.stock);
         }
 
         const product = await Product.create(payload);
@@ -233,14 +248,14 @@ const updateProduct = async (req, res, next) => {
         }
 
         if (req.file) {
-             updates.images = [{ url: req.file.filename, isPrimary: true }];
+            updates.images = [{ url: req.file.filename, isPrimary: true }];
         } else if (updates.image && typeof updates.image === "string") {
-             updates.images = [{ url: updates.image, isPrimary: true }];
-             delete updates.image;
+            updates.images = [{ url: updates.image, isPrimary: true }];
+            delete updates.image;
         }
-        
+
         if (updates.stock !== undefined) {
-             updates.stockQuantity = Number(updates.stock);
+            updates.stockQuantity = Number(updates.stock);
         }
 
         // Convert booleans from strings (FormData)
@@ -294,7 +309,7 @@ const addReview = async (req, res, next) => {
         // Check if user already reviewed this product
         const alreadyReviewed = await Review.findOne({
             product: req.params.id,
-            user:    req.user._id,
+            user: req.user._id,
         });
 
         if (alreadyReviewed) {
@@ -304,10 +319,10 @@ const addReview = async (req, res, next) => {
 
         const review = await Review.create({
             product: req.params.id,
-            user:    req.user._id,
-            rating:  Number(rating),
-            title:   title || "",
-            body:    body,
+            user: req.user._id,
+            rating: Number(rating),
+            title: title || "",
+            body: body,
             isApproved: true, // Auto-approve for now
         });
 

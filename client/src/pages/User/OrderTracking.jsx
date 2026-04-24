@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { FaGlobeAmericas, FaEnvelope, FaTag, FaBox, FaTruck, FaShippingFast, FaCheckCircle, FaArrowLeft, FaBolt, FaShip, FaPalette, FaKey } from 'react-icons/fa';
 import { GiSpiralShell } from 'react-icons/gi';
+import axios from 'axios';
+import useAuthStore from '../../store/authStore';
 import './OrderTracking.css';
 
 export default function OrderTracking() {
@@ -9,56 +11,32 @@ export default function OrderTracking() {
     const navigate = useNavigate();
     const orderIdParam = searchParams.get('orderId');
     const [orderData, setOrderData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const token = useAuthStore((state) => state.token);
 
-    // Mock DB updated with Icon Components or names
-    const mockOrders = {
-        "ORD-2024-889": {
-            orderDate: "Oct 12, 2024",
-            orderStatus: "delivered",
-            paymentMethod: "Credit Card ending in 4242",
-            totalAmount: "₹6,640",
-            shippingAddress: "123 Otaku Lane, Anime City, Tokyo 100-0001, Japan",
-            trackingId: "TRK889220456",
-            estimatedDelivery: "Delivered on Oct 18, 2024",
-            items: [
-                { name: "Demon Slayer Haori", desc: "Size: M · Qty: 1", price: "₹3,735", image: '/src/assets/images/products/Haori.jpg' },
-                { name: "Naruto Headband - Hidden Leaf", desc: "Qty: 1", price: "₹1,577", image: '/src/assets/images/products/naruto-headband.jpg' },
-                { name: "Mystery Anime Sticker Pack", desc: "Qty: 2", price: "₹1,328", image: '/src/assets/images/products/poster.jpg' }
-            ]
-        },
-        "ORD-2024-762": {
-            orderDate: "Sep 28, 2024",
-            orderStatus: "shipped",
-            paymentMethod: "PayPal (k***@email.com)",
-            totalAmount: "₹996",
-            shippingAddress: "456 Manga Blvd, Osaka 530-0001, Japan",
-            trackingId: "TRK762887321",
-            estimatedDelivery: "3-5 Business Days",
-            items: [
-                { name: "Attack on Titan Keychain Set", desc: "Qty: 1", price: "₹996", image: '/src/assets/images/products/AOT-jackate.jpg' }
-            ]
-        },
-        "ORD-2024-554": {
-            orderDate: "Sep 15, 2024",
-            orderStatus: "processing",
-            paymentMethod: "Debit Card ending in 8910",
-            totalAmount: "₹12,076",
-            shippingAddress: "789 Sakura St, Kyoto 600-8001, Japan",
-            trackingId: "Awaiting shipment",
-            estimatedDelivery: "5-7 Business Days (estimated)",
-            items: [
-                { name: "One Piece Going Merry Model Kit", desc: "1:100 Scale · Qty: 1", price: "₹6,557", image: '/src/assets/images/products/one-piece-wantedposter.png' },
-                { name: "Jujutsu Kaisen T-Shirt", desc: "Size: L · Qty: 1", price: "₹2,698", image: '/src/assets/images/products/yuji-jackate.jpg' },
-                { name: "My Hero Academia Poster Set", desc: "A3 Size · Qty: 2", price: "₹2,822", image: '/src/assets/images/products/deku-jackate.jpg' }
-            ]
-        }
-    };
 
     useEffect(() => {
-        if (orderIdParam && mockOrders[orderIdParam]) {
-            setOrderData(mockOrders[orderIdParam]);
-        }
-    }, [orderIdParam]);
+        if (!orderIdParam) return;
+
+        const fetchOrderDetails = async () => {
+            setLoading(true);
+            try {
+                const { data } = await axios.get(`http://localhost:5000/api/orders/${orderIdParam}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setOrderData(data);
+                setError(null);
+            } catch (err) {
+                setError(err.response?.data?.message || 'Order not found or unauthorized');
+                setOrderData(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrderDetails();
+    }, [orderIdParam, token]);
 
     if (!orderIdParam) {
         return (
@@ -87,32 +65,41 @@ export default function OrderTracking() {
                         <div className="track-form-group">
                             <div className="track-input-wrapper">
                                 <span className="track-input-icon"><FaTag /></span>
-                                <input type="text" name="orderId" className="track-input" placeholder="Order ID (e.g. ORD-2024-889)" required />
+                                <input type="text" name="orderId" className="track-input" placeholder="Order ID (e.g. 64abc123...)" required />
                             </div>
                         </div>
 
                         <button type="submit" className="track-btn">Track Order</button>
                     </form>
-
-                    <div style={{ marginTop: '20px', fontSize: '0.9rem', color: '#666', textAlign: 'center' }}>
-                        Demo IDs: <Link to="/order-tracking?orderId=ORD-2024-889">ORD-2024-889</Link>, <Link to="/order-tracking?orderId=ORD-2024-762">ORD-2024-762</Link>
-                    </div>
                 </div>
             </main>
         );
     }
 
-    if (!orderData) {
+    if (loading) {
+        return (
+            <div className="ot-container" style={{ textAlign: 'center', padding: '60px' }}>
+                <h2>Loading order details...</h2>
+            </div>
+        );
+    }
+
+    if (!orderData || error) {
         return (
             <div className="ot-container" style={{ textAlign: 'center', padding: '60px' }}>
                 <h2>Order Not Found</h2>
-                <p>Could not find order #{orderIdParam}.</p>
+                <p>{error || `Could not find order #${orderIdParam.substring(0, 8)}.`}</p>
                 <Link to="/order-tracking" className="btn primary" style={{ marginTop: '20px', display: 'inline-block' }}>Try Another ID</Link>
             </div>
         );
     }
 
-    const { orderDate, orderStatus, trackingId, estimatedDelivery, paymentMethod, shippingAddress, totalAmount, items } = orderData;
+    const { status: orderStatus, isPaid, shippingAddress, totalAmount: total, items } = orderData;
+    const orderDate = new Date(orderData.createdAt).toLocaleDateString();
+    const trackingId = orderData.trackingCode || (orderStatus === 'processing' ? 'Awaiting shipment' : `TRK${orderData._id.substring(0, 6).toUpperCase()}`);
+    const estimatedDelivery = orderStatus === 'delivered' ? 'Delivered' : (orderStatus === 'shipped' ? '3-5 Business Days' : '5-7 Business Days (estimated)');
+    const paymentMethod = isPaid ? 'Paid via Razorpay' : 'Pending Payment';
+    const totalAmountStr = `₹${(total || 0).toLocaleString()}`;
 
     // Progress Logic
     let stepIndex = 0;
@@ -133,9 +120,9 @@ export default function OrderTracking() {
 
     return (
         <main className="ot-container">
-            <Link to="/account" className="ot-back"><FaArrowLeft style={{ marginRight: '8px' }} /> Back to Orders</Link>
+            <Link to="/orders" className="ot-back"><FaArrowLeft style={{ marginRight: '8px' }} /> Back to Orders</Link>
 
-            <h1 className="ot-page-title">Order #{orderIdParam}</h1>
+            <h1 className="ot-page-title">Order #{orderIdParam.substring(0, 8).toUpperCase()}</h1>
             <p className="ot-page-sub">
                 Placed on {orderDate} &middot; <span className={`ot-status-badge ${orderStatus}`}>{orderStatus.replace("_", " ")}</span>
             </p>
@@ -166,7 +153,7 @@ export default function OrderTracking() {
                 <div className="ot-details-grid">
                     <div>
                         <div className="ot-detail-label">Order ID</div>
-                        <div className="ot-detail-value">{orderIdParam}</div>
+                        <div className="ot-detail-value">{orderIdParam.substring(0, 8).toUpperCase()}</div>
                     </div>
                     <div>
                         <div className="ot-detail-label">Date Placed</div>
@@ -178,11 +165,13 @@ export default function OrderTracking() {
                     </div>
                     <div>
                         <div className="ot-detail-label">Total Amount</div>
-                        <div className="ot-detail-value">{totalAmount}</div>
+                        <div className="ot-detail-value">{totalAmountStr}</div>
                     </div>
                     <div style={{ gridColumn: '1/-1' }}>
                         <div className="ot-detail-label">Shipping Address</div>
-                        <div className="ot-detail-value">{shippingAddress}</div>
+                        <div className="ot-detail-value">
+                            {shippingAddress?.addressLine1}, {shippingAddress?.city}, {shippingAddress?.postalCode}, {shippingAddress?.country}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -190,21 +179,37 @@ export default function OrderTracking() {
             {/* Items Ordered */}
             <div className="ot-card">
                 <h3 className="ot-card-title">Items Ordered</h3>
-                {items.map((item, j) => (
-                    <div key={j} className="ot-item">
-                        <div className="ot-item-img">
-                            <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {items.map((item, j) => {
+                    const itemName = item.productName || "Product";
+                    let resolvedUrl = item.productImage || "/assets/placeholder.png";
+                    if (resolvedUrl && !resolvedUrl.startsWith('http') && !resolvedUrl.startsWith('/src') && !resolvedUrl.startsWith('/assets') && !resolvedUrl.startsWith('data:')) {
+                        resolvedUrl = `/src/assets/images/products/${resolvedUrl}`;
+                    }
+
+                    return (
+                        <div key={j} className="ot-item">
+                            <div className="ot-item-img">
+                                <img src={resolvedUrl} alt={itemName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div className="ot-item-info">
+                                <h4>{itemName}</h4>
+                                <p>Qty: {item.quantity || 1}</p>
+                                {orderStatus === 'delivered' && item.product && (
+                                    <button
+                                        className="ot-review-btn"
+                                        onClick={() => navigate(`/add-review/${item.product}?orderId=${orderIdParam}`)}
+                                    >
+                                        Add Review
+                                    </button>
+                                )}
+                            </div>
+                            <div className="ot-item-price">₹{(item.unitPrice * (item.quantity || 1)).toLocaleString()}</div>
                         </div>
-                        <div className="ot-item-info">
-                            <h4>{item.name}</h4>
-                            <p>{item.desc}</p>
-                        </div>
-                        <div className="ot-item-price">{item.price}</div>
-                    </div>
-                ))}
+                    );
+                })}
                 <div style={{ marginTop: '16px' }}>
                     <div className="ot-total-row final">
-                        <span>Total</span><span>{totalAmount}</span>
+                        <span>Total</span><span>{totalAmountStr}</span>
                     </div>
                 </div>
             </div>

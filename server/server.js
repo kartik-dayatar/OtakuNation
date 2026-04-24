@@ -1,19 +1,20 @@
 require("dotenv").config();
 
 const express = require("express");
-const cors    = require("cors");
-const path    = require("path");
+const cors = require("cors");
+const path = require("path");
 
-const connectDB        = require("./config/db");
-const userRoutes       = require("./routes/userRoutes");
-const productRoutes    = require("./routes/productRoutes");
-const orderRoutes      = require("./routes/orderRoutes");
-const adminRoutes      = require("./routes/adminRoutes");
-const categoryRoutes   = require("./routes/categoryRoutes");
-const animeSeriesRoutes= require("./routes/animeSeriesRoutes");
-const refundRoutes     = require("./routes/refundRoutes");
-const articleRoutes    = require("./routes/articleRoutes");
-const siteSettingRoutes= require("./routes/siteSettingRoutes");
+const connectDB = require("./config/db");
+const userRoutes = require("./routes/userRoutes");
+const productRoutes = require("./routes/productRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const animeSeriesRoutes = require("./routes/animeSeriesRoutes");
+const refundRoutes = require("./routes/refundRoutes");
+const articleRoutes = require("./routes/articleRoutes");
+const siteSettingRoutes = require("./routes/siteSettingRoutes");
+const newsletterRoutes = require("./routes/newsletterRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 // ── Register all Mongoose models at startup ──────────────
@@ -53,15 +54,16 @@ app.get("/api/health", (req, res) => {
 });
 
 // ── API Routes ───────────────────────────────────────
-app.use("/api/users",    userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/orders",   orderRoutes);
-app.use("/api/admin",    adminRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/categories", categoryRoutes);
-app.use("/api/series",   animeSeriesRoutes);
-app.use("/api/refunds",  refundRoutes);
+app.use("/api/series", animeSeriesRoutes);
+app.use("/api/refunds", refundRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/settings", siteSettingRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 
 // ── Error Handling ───────────────────────────────────
 app.use(notFound);

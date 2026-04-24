@@ -1,19 +1,17 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './CategoryBar.css';
-
-const categories = [
-    { id: 'all', label: 'All' },
-    { id: 'apparel', label: 'Apparel' },
-    { id: 'figures', label: 'Figures' },
-    { id: 'manga', label: 'Manga' },
-    { id: 'accessories', label: 'Accessories' },
-    { id: 'footwear', label: 'Footwear' },
-    { id: 'home-decor', label: 'Home Decor' },
-    { id: 'ukiyo-district', label: 'Ukiyo District' }
-];
+import useProductStore from '../../store/productStore';
 
 const CategoryBar = () => {
+    const categoriesFromStore = useProductStore(state => state.categories);
+    const loading = useProductStore(state => state.loadingCategories);
+    
+    // Add "All" category at the start
+    const categories = [
+        { slug: 'all', name: 'All' },
+        ...categoriesFromStore
+    ];
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const activeCategory = searchParams.get('category') || 'all';
@@ -31,13 +29,13 @@ const CategoryBar = () => {
             <div className="category-bar">
                 {categories.map(cat => (
                     <button
-                        key={cat.id}
-                        className={`category-item ${activeCategory === cat.id ? 'active' : ''}`}
-                        onClick={() => handleSelectCategory(cat.id)}
+                        key={cat.slug}
+                        className={`category-item ${activeCategory === cat.slug ? 'active' : ''}`}
+                        onClick={() => handleSelectCategory(cat.slug)}
                     >
-                        {cat.label}
-                        {activeCategory === cat.id && (
-                            <div className="active-indicator" layoutId="underline" />
+                        {cat.name}
+                        {activeCategory === cat.slug && (
+                            <div className="active-indicator" />
                         )}
                     </button>
                 ))}

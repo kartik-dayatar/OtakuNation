@@ -6,7 +6,7 @@ export const heroSlides = [
         title: 'Where Every Otaku Belongs',
         subtitle: 'Premium figures, apparel & collectibles from 300+ anime series. Officially licensed, globally shipped.',
         primaryBtn: { text: 'Shop Now', link: '/products' },
-        secondaryBtn: { text: 'New Arrivals', link: '/products?type=new' },
+        secondaryBtn: { text: 'New Arrivals', link: '/new-arrivals' },
         visuals: [
             { img: '/src/assets/images/hero/demon_slayer_float.png', text: 'Demon Slayer', class: 'float-1' },
             { img: '/src/assets/images/hero/jjk_float.png', text: 'Jujutsu Kaisen', class: 'float-2' },
@@ -32,7 +32,7 @@ export const heroSlides = [
         title: 'Up to 40% Off Everything',
         subtitle: 'Biggest anime merch sale of the year. Grab your favorites before they\'re gone!',
         primaryBtn: { text: 'Shop Sale', link: '/products' },
-        secondaryBtn: { text: 'Gift Cards', link: '/giftcards' },
+        secondaryBtn: { text: 'Gift Cards', link: '/gift-cards' },
         visuals: [
             { img: '/src/assets/images/hero/naruto_float.png', text: 'Naruto', class: 'float-1' },
             { img: '/src/assets/images/hero/dbz_float.png', text: 'Dragon Ball Z', class: 'float-2' },
@@ -51,7 +51,7 @@ export const statsData = [
 
 // ── Shop by Anime (thumbnail images) ──
 export const animeList = [
-    { name: 'Demon Slayer', count: '240+ items', img: '/src/assets/images/thumbnails/chainsawman.jpg', link: 'demon-slayer' },
+    { name: 'Demon Slayer', count: '240+ items', img: '/src/assets/images/thumbnails/AOT.jpg', link: 'demon-slayer' },
     { name: 'Jujutsu Kaisen', count: '180+ items', img: '/src/assets/images/thumbnails/JJK.jpg', link: 'jujutsu-kaisen' },
     { name: 'One Piece', count: '320+ items', img: '/src/assets/images/thumbnails/one_piece.jpg', link: 'one-piece' },
     { name: 'Naruto', count: '280+ items', img: '/src/assets/images/thumbnails/naruto.jpg', link: 'naruto' },

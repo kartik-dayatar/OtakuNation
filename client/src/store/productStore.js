@@ -12,13 +12,14 @@ const useProductStore = create((set, get) => ({
         set({ loading: true });
         try {
             const queryParams = new URLSearchParams();
-            
+
             // Add limit and page defaults
             queryParams.append('limit', params.limit || 100);
             if (params.page) queryParams.append('page', params.page);
-            
+
             // Add filters
             if (params.category && params.category !== 'all') queryParams.append('category', params.category);
+            if (params.anime && params.anime !== 'all') queryParams.append('anime', params.anime);
             if (params.status && params.status !== 'all') queryParams.append('status', params.status);
             if (params.sort) queryParams.append('sort', params.sort);
             if (params.search) queryParams.append('search', params.search);
@@ -78,15 +79,15 @@ const useProductStore = create((set, get) => ({
         try {
             const isFormData = productData instanceof FormData;
             const { data } = await axios.post('http://localhost:5000/api/products', productData, {
-                 headers: { 
-                     Authorization: `Bearer ${localStorage.getItem('on_token')}`,
-                     'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
-                 }
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('on_token')}`,
+                    'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
+                }
             });
             set((state) => ({ products: [data, ...state.products] }));
             get().fetchProducts();
             return data;
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             throw err;
         }
@@ -97,7 +98,7 @@ const useProductStore = create((set, get) => ({
         try {
             const isFormData = productData instanceof FormData;
             const { data } = await axios.put(`http://localhost:5000/api/products/${id}`, productData, {
-                headers: { 
+                headers: {
                     Authorization: `Bearer ${localStorage.getItem('on_token')}`,
                     'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
                 }
@@ -107,37 +108,37 @@ const useProductStore = create((set, get) => ({
             }));
             get().fetchProducts();
             return data;
-        } catch(err) {
-             console.error(err);
-             throw err;
+        } catch (err) {
+            console.error(err);
+            throw err;
         }
     },
 
     // Admin: Delete Product calls API
     deleteProduct: async (id) => {
         try {
-             await axios.delete(`http://localhost:5000/api/products/${id}`, {
-                 headers: { Authorization: `Bearer ${localStorage.getItem('on_token')}` }
-             });
-             set((state) => ({
-                 products: state.products.filter((p) => p.id != id)
-             }));
-        } catch(err) {
-             console.error(err);
+            await axios.delete(`http://localhost:5000/api/products/${id}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('on_token')}` }
+            });
+            set((state) => ({
+                products: state.products.filter((p) => p.id != id)
+            }));
+        } catch (err) {
+            console.error(err);
         }
     },
 
     // User: Add Review
     addReview: async (productId, review) => {
-         try {
-             await axios.post(`http://localhost:5000/api/products/${productId}/reviews`, review, {
-                  headers: { Authorization: `Bearer ${localStorage.getItem('on_token')}` }
-             });
-             // refetch to get updated rating logic
-             get().fetchProducts();
-         } catch(err) {
-             console.error(err);
-         }
+        try {
+            await axios.post(`http://localhost:5000/api/products/${productId}/reviews`, review, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('on_token')}` }
+            });
+            // refetch to get updated rating logic
+            get().fetchProducts();
+        } catch (err) {
+            console.error(err);
+        }
     }
 }));
 

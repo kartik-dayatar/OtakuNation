@@ -2,25 +2,17 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaBolt, FaSearch, FaHeart, FaShoppingCart, FaUserCircle } from 'react-icons/fa';
 import useCartStore from '../../store/cartStore';
+import useAuthStore from '../../store/authStore';
 import './Header.css';
 
-/**
- * Header component
- *
- * variant="pre-login"  → public pages (home, shop, product detail, new-arrivals, contact)
- *                        Shows: Sign In + Sign Up buttons
- *
- * variant="post-login" → pages that require the user to be logged in
- *                        Shows: username pill instead of auth buttons
- *
- * When no variant is passed it defaults to "pre-login".
- */
 function Header({ variant = 'pre-login' }) {
     const navigate = useNavigate();
     const cartCount = useCartStore((state) => state.getCount());
+    const { user } = useAuthStore();
     const [searchTerm, setSearchTerm] = useState('');
 
-    const isPostLogin = variant === 'post-login';
+    // If user is logged in, treat it as post-login regardless of variant
+    const isPostLogin = variant === 'post-login' || !!user;
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -72,9 +64,11 @@ function Header({ variant = 'pre-login' }) {
                     <div className="auth-container">
                         {isPostLogin ? (
                             /* ── POST-LOGIN NAVBAR: show username ── */
-                            <Link to="/account" className="user-pill">
+                            <Link to={user?.role === 'admin' ? "/admin" : "/account"} className="user-pill">
                                 <FaUserCircle size={20} />
-                                <span className="user-name" style={{ marginLeft: "8px" }}>Otaku</span>
+                                <span className="user-name" style={{ marginLeft: "8px" }}>
+                                    {user?.firstName || 'Otaku'}
+                                </span>
                             </Link>
                         ) : (
                             /* ── PRE-LOGIN NAVBAR: show Sign In / Sign Up ── */

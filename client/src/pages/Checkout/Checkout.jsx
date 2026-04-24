@@ -1,99 +1,130 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import useCartStore from '../../store/cartStore';
+import useAuthStore from '../../store/authStore';
 import './Checkout.css';
 
-const COUPONS = {
-    'OTAKU20': { type: 'percent', value: 20, label: '20% off' },
-    'ANIME10': { type: 'percent', value: 10, label: '10% off' },
-    'NARUTO15': { type: 'percent', value: 15, label: '15% off' },
-    'FIRST50': { type: 'flat', value: 4150, label: '₹4,150 off' }
-};
+const API_URL = 'http://localhost:5000/api';
+const FREE_SHIPPING_MIN = 5000;
+const FLAT_SHIPPING     = 99;
 
 export default function Checkout() {
     const navigate = useNavigate();
-    // Mock data - normally passed via state or context
-    const SUBTOTAL = 11620;
-    const SHIPPING = 415;
 
-    const [couponCode, setCouponCode] = useState('');
-    const [activeCoupon, setActiveCoupon] = useState(null);
-    const [message, setMessage] = useState({ text: '', color: '' });
-    const [shake, setShake] = useState(false);
+    // ── Real cart from DB-synced store ────────────────
+    const items = useCartStore((s) => s.items);
+    const token = useAuthStore((s) => s.token);
+    const user  = useAuthStore((s) => s.user);
 
-    const calcDiscount = (coupon) => {
-        if (!coupon) return 0;
-        if (coupon.type === 'percent') {
-            return Math.round((SUBTOTAL * coupon.value) / 100);
-        }
-        return Math.min(coupon.value, SUBTOTAL);
-    };
+    // ── Address form state ────────────────────────────
+    const [form, setForm] = useState({
+        recipientName: user ? `${user.firstName} ${user.lastName}` : '',
+        addressLine1:  '',
+        addressLine2:  '',
+        city:          '',
+        state:         '',
+        postalCode:    '',
+        country:       'India',
+        phone:         user?.phone || '',
+    });
 
-    const discount = calcDiscount(activeCoupon);
-    const total = SUBTOTAL + SHIPPING - discount;
+    // ── Promo state ───────────────────────────────────
+    const [promoInput,  setPromoInput]  = useState('');
+    const [promoType,   setPromoType]   = useState('coupon'); // 'coupon' | 'giftcard'
+    const [appliedPromo, setAppliedPromo] = useState(null);
+    const [promoMsg,    setPromoMsg]    = useState({ text: '', color: '' });
+    const [promoLoading, setPromoLoading] = useState(false);
+    const [shake,       setShake]       = useState(false);
 
-    const handleApplyCoupon = () => {
-        setMessage({ text: '', color: '' });
-        const code = couponCode.trim().toUpperCase();
+    // ── Computed financial totals ─────────────────────
+    const subtotal      = items.reduce((t, item) => t + item.price * item.quantity, 0);
+    const shippingAmount = subtotal >= FREE_SHIPPING_MIN ? 0 : FLAT_SHIPPING;
+    const promoDiscount = appliedPromo?.discount || 0;
+    const total         = Math.max(0, subtotal + shippingAmount - promoDiscount);
 
-        if (!code) {
-            setMessage({ text: '⚠️ Please enter a coupon code.', color: '#f59e0b' });
-            return;
-        }
+    const fmt = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
 
-        if (activeCoupon) {
-            setMessage({ text: '⚠️ A coupon is already applied. Remove it first.', color: '#f59e0b' });
-            return;
-        }
+    // ── Handlers ──────────────────────────────────────
+    const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-        const coupon = COUPONS[code];
-        if (!coupon) {
-            setMessage({ text: '❌ Invalid coupon code. Please try again.', color: '#dc2626' });
+    const handleApplyPromo = async () => {
+        setPromoMsg({ text: '', color: '' });
+        const code = promoInput.trim().toUpperCase();
+        if (!code) return setPromoMsg({ text: '⚠️ Please enter a code.', color: '#f59e0b' });
+        if (appliedPromo) return setPromoMsg({ text: '⚠️ A promo is already applied. Remove it first.', color: '#f59e0b' });
+
+        setPromoLoading(true);
+        try {
+            const payload = promoType === 'coupon'
+                ? { couponCode: code, subtotal }
+                : { giftCardCode: code, subtotal };
+
+            const { data } = await axios.post(`${API_URL}/orders/validate-promo`, payload, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            setAppliedPromo({ ...data, inputCode: code });
+            setPromoMsg({ text: `🎉 ${data.label} applied!`, color: '#16a34a' });
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Invalid promo code.';
+            setPromoMsg({ text: `❌ ${msg}`, color: '#dc2626' });
             setShake(true);
             setTimeout(() => setShake(false), 400);
-            return;
+        } finally {
+            setPromoLoading(false);
         }
-
-        setActiveCoupon({ code, ...coupon });
-        setMessage({ text: '🎉 Coupon applied successfully!', color: '#16a34a' });
     };
 
-    const removeCoupon = () => {
-        setActiveCoupon(null);
-        setCouponCode('');
-        setMessage({ text: '🗑️ Coupon removed.', color: '#64748b' });
+    const handleRemovePromo = () => {
+        setAppliedPromo(null);
+        setPromoInput('');
+        setPromoMsg({ text: '🗑️ Promo removed.', color: '#64748b' });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Proceed to payment (mock)
-        navigate('/payment');
+        if (items.length === 0) return;
+
+        // Pass address, promo, and computed totals to Payment page
+        navigate('/payment', {
+            state: {
+                shippingAddress: form,
+                promo: appliedPromo,
+                subtotal,
+                shippingAmount,
+                promoDiscount,
+                total,
+            },
+        });
     };
+
+    // ── Empty cart guard ──────────────────────────────
+    if (items.length === 0) {
+        return (
+            <main className="checkout-page">
+                <div className="checkout-container" style={{ textAlign: 'center', padding: '80px 20px' }}>
+                    <h2>Your cart is empty</h2>
+                    <p style={{ color: '#64748b', marginBottom: '24px' }}>Add items to your cart before checking out.</p>
+                    <Link to="/products" className="btn primary">Browse Products</Link>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="checkout-page">
             <div className="checkout-container">
                 {/* Progress Steps */}
                 <div className="checkout-steps">
-                    <div className="step completed">
-                        <div className="step-circle">✓</div>
-                        <div className="step-label">Cart</div>
-                    </div>
-                    <div className="step active">
-                        <div className="step-circle">2</div>
-                        <div className="step-label">Address</div>
-                    </div>
-                    <div className="step">
-                        <div className="step-circle">3</div>
-                        <div className="step-label">Payment</div>
-                    </div>
-                    <div className="step">
-                        <div className="step-circle">4</div>
-                        <div className="step-label">Confirm</div>
-                    </div>
+                    <div className="step completed"><div className="step-circle">✓</div><div className="step-label">Cart</div></div>
+                    <div className="step active">   <div className="step-circle">2</div><div className="step-label">Address</div></div>
+                    <div className="step">          <div className="step-circle">3</div><div className="step-label">Payment</div></div>
+                    <div className="step">          <div className="step-circle">4</div><div className="step-label">Confirm</div></div>
                 </div>
 
                 <div className="form-grid" style={{ gridTemplateColumns: '1.4fr 0.8fr' }}>
-                    {/* Address Form */}
+                    {/* ── Address Form ── */}
                     <div className="form-card">
                         <div className="form-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
@@ -101,43 +132,53 @@ export default function Checkout() {
                                 <p style={{ color: 'var(--text-muted, #64748b)', marginTop: '4px' }}>Where should we send your order?</p>
                             </div>
                             <div style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span>🔒</span> Secure Checkout
+                                🔒 Secure Checkout
                             </div>
                         </div>
 
                         <form onSubmit={handleSubmit}>
                             <div className="form-grid">
-                                <div className="form-group">
-                                    <label className="form-label">First Name</label>
-                                    <input type="text" className="form-input" placeholder="Naruto" required />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Last Name</label>
-                                    <input type="text" className="form-input" placeholder="Uzumaki" required />
-                                </div>
-
                                 <div className="form-group full-width">
-                                    <label className="form-label">Address</label>
-                                    <input type="text" className="form-input" placeholder="123 Konoha Village St" required />
+                                    <label className="form-label">Full Name</label>
+                                    <input name="recipientName" type="text" className="form-input"
+                                        placeholder="Naruto Uzumaki" required
+                                        value={form.recipientName} onChange={handleChange} />
                                 </div>
-
                                 <div className="form-group full-width">
-                                    <label className="form-label">Apartment, suite, etc. (optional)</label>
-                                    <input type="text" className="form-input" placeholder="Apt 4B" />
+                                    <label className="form-label">Address Line 1</label>
+                                    <input name="addressLine1" type="text" className="form-input"
+                                        placeholder="House No, Street, Area" required
+                                        value={form.addressLine1} onChange={handleChange} />
                                 </div>
-
+                                <div className="form-group full-width">
+                                    <label className="form-label">Address Line 2 (optional)</label>
+                                    <input name="addressLine2" type="text" className="form-input"
+                                        placeholder="Apartment, suite, landmark"
+                                        value={form.addressLine2} onChange={handleChange} />
+                                </div>
                                 <div className="form-group">
                                     <label className="form-label">City</label>
-                                    <input type="text" className="form-input" placeholder="Hidden Leaf" required />
+                                    <input name="city" type="text" className="form-input"
+                                        placeholder="Mumbai" required
+                                        value={form.city} onChange={handleChange} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">State</label>
+                                    <input name="state" type="text" className="form-input"
+                                        placeholder="Maharashtra" required
+                                        value={form.state} onChange={handleChange} />
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Postal Code</label>
-                                    <input type="text" className="form-input" placeholder="10001" required />
+                                    <input name="postalCode" type="text" className="form-input"
+                                        placeholder="400001" required
+                                        value={form.postalCode} onChange={handleChange} />
                                 </div>
-
-                                <div className="form-group full-width">
+                                <div className="form-group">
                                     <label className="form-label">Phone Number</label>
-                                    <input type="tel" className="form-input" placeholder="+1 (555) 000-0000" required />
+                                    <input name="phone" type="tel" className="form-input"
+                                        placeholder="+91 98765 43210" required
+                                        value={form.phone} onChange={handleChange} />
                                 </div>
                             </div>
 
@@ -150,82 +191,93 @@ export default function Checkout() {
                         </form>
                     </div>
 
-                    {/* Order Summary Sidebar */}
+                    {/* ── Order Summary Sidebar ── */}
                     <div className="form-card" style={{ height: 'fit-content' }}>
                         <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.1rem' }}>Order Summary</h3>
 
-                        <div className="summary-row">
-                            <span>Naruto Shippuden Figure</span>
-                            <span>₹6,640</span>
-                        </div>
-                        <div className="summary-row">
-                            <span>Akatsuki Hoodie (L)</span>
-                            <span>₹3,735</span>
-                        </div>
-                        <div className="summary-row">
-                            <span>Konoha Headband</span>
-                            <span>₹1,245</span>
-                        </div>
+                        {/* Live cart items from DB */}
+                        {items.map((item) => (
+                            <div className="summary-row" key={`${item.id}-${item.selectedSize}`}>
+                                <span>
+                                    {item.name}
+                                    {item.selectedSize && <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}> ({item.selectedSize})</span>}
+                                    {item.quantity > 1 && <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}> ×{item.quantity}</span>}
+                                </span>
+                                <span>{fmt(item.price * item.quantity)}</span>
+                            </div>
+                        ))}
+
                         <div className="summary-row">
                             <span>Shipping</span>
-                            <span>₹415</span>
+                            <span>{shippingAmount === 0 ? <span style={{ color: '#16a34a' }}>FREE</span> : fmt(shippingAmount)}</span>
                         </div>
 
-                        {/* Coupon Code Section */}
+                        {/* ── Promo Code Section ── */}
                         <div className="coupon-section">
-                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main, #333)', display: 'block', marginBottom: '8px' }}>
-                                🎟️ Have a coupon?
-                            </label>
+                            {/* Promo type toggle */}
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                {['coupon', 'giftcard'].map((t) => (
+                                    <button key={t} type="button"
+                                        onClick={() => { setPromoType(t); setPromoMsg({ text: '', color: '' }); }}
+                                        disabled={!!appliedPromo}
+                                        style={{
+                                            fontSize: '0.78rem', fontWeight: '600', padding: '4px 10px',
+                                            borderRadius: '6px', border: '1px solid',
+                                            cursor: 'pointer',
+                                            borderColor: promoType === t ? 'var(--color-primary, #6366f1)' : '#e2e8f0',
+                                            background:  promoType === t ? 'var(--color-primary, #6366f1)' : 'transparent',
+                                            color:       promoType === t ? '#fff' : 'inherit',
+                                        }}>
+                                        {t === 'coupon' ? '🎟️ Coupon' : '🎁 Gift Card'}
+                                    </button>
+                                ))}
+                            </div>
                             <div className="coupon-input-group">
                                 <input
                                     type="text"
                                     className={`form-input ${shake ? 'shake' : ''}`}
-                                    placeholder="Enter code"
-                                    maxLength="20"
-                                    value={couponCode}
-                                    onChange={(e) => setCouponCode(e.target.value)}
-                                    disabled={!!activeCoupon}
-                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleApplyCoupon())}
+                                    placeholder={promoType === 'coupon' ? 'Enter coupon code' : 'Enter gift card code'}
+                                    maxLength="30"
+                                    value={promoInput}
+                                    onChange={(e) => setPromoInput(e.target.value)}
+                                    disabled={!!appliedPromo || promoLoading}
+                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleApplyPromo())}
                                 />
-                                <button
-                                    type="button"
-                                    className="coupon-btn"
-                                    onClick={handleApplyCoupon}
-                                    disabled={!!activeCoupon}
-                                >
-                                    Apply
+                                <button type="button" className="coupon-btn"
+                                    onClick={handleApplyPromo}
+                                    disabled={!!appliedPromo || promoLoading}>
+                                    {promoLoading ? '...' : 'Apply'}
                                 </button>
                             </div>
-                            {message.text && (
-                                <div style={{ marginTop: '8px', fontSize: '0.8rem', color: message.color }}>{message.text}</div>
+                            {promoMsg.text && (
+                                <div style={{ marginTop: '8px', fontSize: '0.8rem', color: promoMsg.color }}>{promoMsg.text}</div>
                             )}
-
-                            {/* Applied coupon tag */}
-                            {activeCoupon && (
+                            {appliedPromo && (
                                 <div style={{ display: 'flex', marginTop: '10px', padding: '8px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', fontSize: '0.82rem', color: '#15803d', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <span>✅ {activeCoupon.code} — {activeCoupon.label}</span>
-                                    <button type="button" onClick={removeCoupon} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '1rem', padding: '0 0 0 8px', lineHeight: 1 }} title="Remove coupon">✕</button>
+                                    <span>✅ {appliedPromo.inputCode} — {appliedPromo.label}</span>
+                                    <button type="button" onClick={handleRemovePromo} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '1rem', padding: '0 0 0 8px', lineHeight: 1 }} title="Remove promo">✕</button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Discount Row */}
-                        {activeCoupon && (
+                        {/* Discount row */}
+                        {appliedPromo && (
                             <div className="summary-row" style={{ color: '#16a34a' }}>
-                                <span>Discount ({activeCoupon.code})</span>
-                                <span>-₹{discount.toLocaleString('en-IN')}</span>
+                                <span>Discount ({appliedPromo.inputCode})</span>
+                                <span>−{fmt(promoDiscount)}</span>
                             </div>
                         )}
 
                         <div className="summary-row total">
                             <span>Total</span>
-                            <span>₹{total.toLocaleString('en-IN')}</span>
+                            <span>{fmt(total)}</span>
                         </div>
 
-                        <div style={{ marginTop: '14px', fontSize: '0.75rem', color: '#94a3b8', lineHeight: '1.5' }}>
-                            Try: <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>OTAKU20</code>
-                            {' '}<code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>FIRST50</code>
-                        </div>
+                        {subtotal < FREE_SHIPPING_MIN && (
+                            <div style={{ marginTop: '10px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                                Add {fmt(FREE_SHIPPING_MIN - subtotal)} more for free shipping!
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

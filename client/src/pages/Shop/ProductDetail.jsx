@@ -1,22 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FaHeart, FaRegHeart, FaShoppingCart, FaShieldAlt, FaUndo, FaLock, FaBolt } from 'react-icons/fa';
 import useCartStore from '../../store/cartStore';
 import useProductStore from '../../store/productStore';
 import useWishlistStore from '../../store/wishlistStore';
+import { useToast } from '../../components/ui/Toast';
 import './ProductDetail.css';
 
 export default function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const product = useProductStore((state) => state.getProductById(id));
-    const products = useProductStore((state) => state.products);
+    const { getProductById, products, fetchProducts, fetchCategories, categories, loading } = useProductStore();
+    const product = getProductById(id);
     const addItem = useCartStore((s) => s.addItem);
     const toggleWishlist = useWishlistStore((s) => s.toggleItem);
     const isWishlisted = useWishlistStore((s) => s.isWishlisted(id));
+    const { addToast } = useToast();
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState(0);
     const [quantity, setQuantity] = useState(1);
+    
+    // Find the category object to check settings
+    const currentCategory = categories.find(c => c.slug === product?.category || c._id === product?.category);
+    const sizeLabel = currentCategory?.hasSizeOption ? 'Select Size' : 'Select Option';
+
+    // Ensure we fetch products and categories if the user navigated directly to the URL
+    useEffect(() => {
+        fetchProducts();
+        fetchCategories();
+    }, [fetchProducts, fetchCategories]);
+
+    if (loading && !product) {
+        return <div className="product-details-container" style={{ padding: '40px', textAlign: 'center' }}>
+            <h2>Loading product details...</h2>
+        </div>;
+    }
 
     if (!product) {
         return <div className="product-details-container" style={{ padding: '40px', textAlign: 'center' }}>
@@ -28,7 +46,15 @@ export default function ProductDetail() {
     const handleAdd = (e) => {
         e.preventDefault();
         for (let i = 0; i < quantity; i++) {
-            addItem(product, product.sizes ? product.sizes[selectedSize] : 'M');
+            addItem(product, product.sizes ? product.sizes[selectedSize] : 'Standard');
+        }
+        addToast(`${product.name} added to cart!`, 'success');
+    };
+
+    const handleBuyNow = (e) => {
+        e.preventDefault();
+        for (let i = 0; i < quantity; i++) {
+            addItem(product, product.sizes ? product.sizes[selectedSize] : 'Standard');
         }
         navigate('/cart');
     };
@@ -86,7 +112,7 @@ export default function ProductDetail() {
                     {/* Variant Selector */}
                     {product.sizes && (
                         <div className="variant-selector">
-                            <span className="variant-label">Select Size</span>
+                            <span className="variant-label">{sizeLabel}</span>
                             <div className="size-options">
                                 {product.sizes.map((size, i) => (
                                     <button
@@ -114,9 +140,17 @@ export default function ProductDetail() {
                             <span className="qty-value">{quantity}</span>
                             <button type="button" className="qty-btn" onClick={() => setQuantity(quantity + 1)}>+</button>
                         </div>
-                        <button type="submit" className="btn primary add-to-cart-btn" style={{ flex: 1 }}>
+                        <button type="submit" className="btn secondary add-to-cart-btn">
                             <FaShoppingCart style={{ marginRight: '8px' }} />
                             Add to Cart
+                        </button>
+                        <button
+                            type="button"
+                            className="btn primary buy-now-btn"
+                            onClick={handleBuyNow}
+                        >
+                            <FaBolt style={{ marginRight: '8px' }} />
+                            Buy Now
                         </button>
                         <button
                             type="button"
@@ -172,7 +206,7 @@ export default function ProductDetail() {
                     <div className="overall-rating">
                         <span className="big-star">★</span>
                         <span className="rating-num">{product.rating}</span>
-                        <span className="review-count">({product.reviews} global ratings)</span>
+                        <span className="review-count">({product.reviews} ratings)</span>
                     </div>
                 </div>
 
@@ -192,8 +226,9 @@ export default function ProductDetail() {
                             </div>
                         ))
                     ) : (
-                        <div className="review-card">
-                            <p>No detailed reviews yet.</p>
+                        <div className="review-card empty-reviews">
+                            <p>Be the first to leave a review for <strong>{product.name}</strong>!</p>
+                            <Link to={`/add-review/${product.id}`} className="btn primary" style={{ marginTop: '12px', display: 'inline-flex' }}>Write a Review</Link>
                         </div>
                     )}
                 </div>
@@ -212,7 +247,7 @@ export default function ProductDetail() {
                             const displayList = [...related, ...others].slice(0, 8);
 
                             return displayList.map(p => (
-                                <Link to={`/product/${p.id}`} key={p.id} className="carousel-card">
+                                <Link to={`/product/${p._id || p.id}`} key={p._id || p.id} className="carousel-card">
                                     <div className="carousel-image">
                                         <img src={p.image} alt={p.name} />
                                     </div>

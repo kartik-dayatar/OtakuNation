@@ -66,7 +66,7 @@ export default function NewArrivals() {
                         </div>
                     </div>
                     <div className="na-featured-grid">
-                        <Link to="/product/100" className="na-featured-card">
+                        <Link to="/product/1" className="na-featured-card">
                             <div className="na-featured-img" style={{ background: 'url(/src/assets/images/products/gojo-figure.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span>
                                 <span className="na-scarcity">Only 8 left</span>
@@ -82,7 +82,7 @@ export default function NewArrivals() {
                                 <span className="na-add-btn">Add to Cart &#8594;</span>
                             </div>
                         </Link>
-                        <Link to="/product/101" className="na-side-card">
+                        <Link to="/product/25" className="na-side-card">
                             <div className="na-side-img" style={{ background: 'url(/src/assets/images/products/hashira-statchu.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span><span className="na-scarcity">Only 12 left</span>
                             </div>
@@ -91,7 +91,7 @@ export default function NewArrivals() {
                                 <h3>Demon Slayer Hashira Collection Box</h3><span className="na-side-price">₹10,707</span>
                             </div>
                         </Link>
-                        <Link to="/product/102" className="na-side-card">
+                        <Link to="/product/6" className="na-side-card">
                             <div className="na-side-img" style={{ background: 'url(/src/assets/images/products/anya-plush.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span><span className="na-scarcity">Exclusive</span>
                             </div>
@@ -114,7 +114,7 @@ export default function NewArrivals() {
                         </div>
                     </div>
                     <div className="na-grid">
-                        <Link to="/product/103" className="na-card">
+                        <Link to="/product/18" className="na-card">
                             <div className="na-card-img" style={{ background: 'url(/src/assets/images/products/tanjiro-earings.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span><span className="na-scarcity">Only 15 left</span>
                             </div>
@@ -124,7 +124,7 @@ export default function NewArrivals() {
                                 <div className="na-card-bottom"><span className="na-card-price">₹1,992</span><span className="na-card-rating">&#11088; 4.8</span></div>
                             </div>
                         </Link>
-                        <Link to="/product/104" className="na-card">
+                        <Link to="/product/17" className="na-card">
                             <div className="na-card-img" style={{ background: 'url(/src/assets/images/products/sukuna-fingure-replica.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span><span className="na-scarcity">Limited Edition</span>
                             </div>
@@ -134,7 +134,7 @@ export default function NewArrivals() {
                                 <div className="na-card-bottom"><span className="na-card-price">₹4,648</span><span className="na-card-rating">&#11088; 4.9</span></div>
                             </div>
                         </Link>
-                        <Link to="/product/105" className="na-card">
+                        <Link to="/product/19" className="na-card">
                             <div className="na-card-img" style={{ background: 'url(/src/assets/images/products/luffy-G5-tee.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span><span className="na-scarcity">Exclusive Drop</span>
                             </div>
@@ -144,7 +144,7 @@ export default function NewArrivals() {
                                 <div className="na-card-bottom"><span className="na-card-price">₹3,154</span><span className="na-card-rating">&#11088; 4.7</span></div>
                             </div>
                         </Link>
-                        <Link to="/product/106" className="na-card">
+                        <Link to="/product/7" className="na-card">
                             <div className="na-card-img" style={{ background: 'url(/src/assets/images/products/deku.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span><span className="na-scarcity">Only 20 left</span>
                             </div>
@@ -154,7 +154,7 @@ export default function NewArrivals() {
                                 <div className="na-card-bottom"><span className="na-card-price">₹4,067</span><span className="na-card-rating">&#11088; 4.6</span></div>
                             </div>
                         </Link>
-                        <Link to="/product/107" className="na-card">
+                        <Link to="/product/2" className="na-card">
                             <div className="na-card-img" style={{ background: 'url(/src/assets/images/products/AOT-jackate.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span><span className="na-scarcity">Limited Edition</span>
                             </div>
@@ -164,7 +164,7 @@ export default function NewArrivals() {
                                 <div className="na-card-bottom"><span className="na-card-price">₹5,976</span><span className="na-card-rating">&#11088; 4.9</span></div>
                             </div>
                         </Link>
-                        <Link to="/product/108" className="na-card">
+                        <Link to="/product/9" className="na-card">
                             <div className="na-card-img" style={{ background: 'url(/src/assets/images/products/vagita-figure.jpg) center/cover no-repeat' }}>
                                 <span className="na-badge-glow">NEW</span><span className="na-scarcity">Only 6 left</span>
                             </div>

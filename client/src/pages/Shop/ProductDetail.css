@@ -111,10 +111,14 @@
 }
 
 .price {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 2rem;
+    font-weight: 800;
     color: var(--text-main);
     margin-bottom: 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+    line-height: 1;
 }
 
 .description {
@@ -182,8 +186,10 @@
 
 .pro-actions {
     display: flex;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 40px;
+    align-items: center;
 }
 
 .qty-input-group {
@@ -224,6 +230,7 @@
 .wishlist-toggle-btn {
     color: var(--text-muted, #94a3b8);
     transition: color 0.2s, border-color 0.2s, transform 0.15s;
+    flex-shrink: 0;
 }
 
 .wishlist-toggle-btn:hover {
@@ -243,6 +250,29 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 1;
+}
+
+/* Buy Now button */
+.buy-now-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+/* Secondary button style for Add to Cart */
+.btn.secondary {
+    background: transparent;
+    color: var(--primary, #7c3aed);
+    border: 2px solid var(--primary, #7c3aed);
+    font-weight: 700;
+}
+
+.btn.secondary:hover {
+    background: var(--primary-soft, #eff4ff);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.2);
 }
 
 /* Reviews Section */
@@ -382,6 +412,17 @@
     font-size: 0.9rem;
     color: #64748b;
     font-weight: 400;
+}
+
+/* Empty review state */
+.empty-reviews {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 28px 24px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
 }
 
 .reviews-list {

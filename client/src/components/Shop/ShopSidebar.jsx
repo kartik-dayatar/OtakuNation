@@ -1,39 +1,9 @@
 import { Tag, User, Filter, RotateCcw, Shirt, Box, Book, Watch, Footprints, Home, Brush } from 'lucide-react';
 import './ShopSidebar.css';
 
-// Sub-Category Mapping
-const subCategoryData = {
-    apparel: [
-        'Oversized Tees', 'Kanji Chest Tees', 'Hoodies',
-        'Sweatshirts', 'Jackets', 'Long Sleeves'
-    ],
-    figures: [
-        'Premium PVC', 'Resin Statues', 'Nendoroids',
-        '1/6 Scale', 'Busts'
-    ],
-    manga: [
-        'Box Sets', 'Hardcovers', 'Artbooks',
-        'Light Novels', 'Collector Editions'
-    ],
-    accessories: [
-        'Caps', 'Pendants', 'Bracelets',
-        'Keychains', 'Tote Bags', 'Pins'
-    ],
-    footwear: [
-        'Sneakers', 'Slip-ons', 'High-tops',
-        'Slides', 'Socks'
-    ],
-    'home-decor': [
-        'Art Prints', 'Canvas Art', 'Neon Signs',
-        'Wall Flags', 'Desk Mats', 'Rugs', 'Blankets'
-    ],
-    'ukiyo-district': [
-        'Ukiyo-e Prints', 'Samurai Art', 'Folklore Art',
-        'Wall Scrolls', 'Calligraphy', 'Haori'
-    ]
-};
+import useProductStore from '../../store/productStore';
 
-// Icon Mapping
+// Icon Mapping (Keep as it matches slugs to icons)
 const categoryIcons = {
     apparel: Shirt,
     figures: Box,
@@ -48,6 +18,7 @@ const ShopSidebar = ({
     activeCategory,
     activeAnime,
     priceRange,
+    maxPrice = 20000,
     // toggleCategory, // Not needed for sub-filters
     toggleAnime,
     setPriceRange,
@@ -55,8 +26,12 @@ const ShopSidebar = ({
     sidebarCategories, // Now represents selected SUB-FILTERS
     toggleSidebarCategory // Toggles sub-filters
 }) => {
+    const categories = useProductStore(state => state.categories);
+    const animeSeries = useProductStore(state => state.animeSeries);
+
     // Determine what to show in the first section
     const isMainCategorySelected = activeCategory && activeCategory !== 'all';
+    const activeCategoryObj = categories.find(c => c.slug === activeCategory);
 
     // Get the icon component dynamically, default to Tag
     const SectionIcon = isMainCategorySelected ? (categoryIcons[activeCategory] || Tag) : Tag;
@@ -74,7 +49,7 @@ const ShopSidebar = ({
                 <ul className="sidebar-list">
                     {isMainCategorySelected ? (
                         // Context-Aware Sub-Filters
-                        subCategoryData[activeCategory]?.map(subCat => (
+                        activeCategoryObj?.subCategories?.map(subCat => (
                             <li className="sidebar-item" key={subCat}>
                                 <label className={`sidebar-label ${sidebarCategories.includes(subCat) ? 'active' : ''}`}>
                                     <input
@@ -90,16 +65,16 @@ const ShopSidebar = ({
                     ) : (
                         // Default Categories (when 'All' is selected)
                         // Render checkboxes for main categories
-                        ['apparel', 'figures', 'manga', 'accessories', 'footwear', 'home-decor', 'ukiyo-district'].map(cat => (
-                            <li className="sidebar-item" key={cat}>
-                                <label className={`sidebar-label ${sidebarCategories.includes(cat) ? 'active' : ''}`}>
+                        categories.map(cat => (
+                            <li className="sidebar-item" key={cat.slug}>
+                                <label className={`sidebar-label ${sidebarCategories.includes(cat.slug) ? 'active' : ''}`}>
                                     <input
                                         type="checkbox"
-                                        checked={sidebarCategories.includes(cat)}
-                                        onChange={() => toggleSidebarCategory(cat)}
+                                        checked={sidebarCategories.includes(cat.slug)}
+                                        onChange={() => toggleSidebarCategory(cat.slug)}
                                         className="sidebar-checkbox"
                                     />
-                                    <span className="label-text">{cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}</span>
+                                    <span className="label-text">{cat.name}</span>
                                 </label>
                             </li>
                         ))
@@ -114,17 +89,17 @@ const ShopSidebar = ({
                     <span>Anime Series</span>
                 </div>
                 <ul className="sidebar-list">
-                    {['naruto', 'one-piece', 'demon-slayer', 'jujutsu-kaisen'].map(anime => (
-                        <li className="sidebar-item" key={anime}>
-                            <label className={`sidebar-label ${activeAnime.includes(anime) ? 'active' : ''}`}>
+                    {animeSeries.map(anime => (
+                        <li className="sidebar-item" key={anime.slug}>
+                            <label className={`sidebar-label ${activeAnime.includes(anime.slug) ? 'active' : ''}`}>
                                 <input
                                     type="checkbox"
-                                    checked={activeAnime.includes(anime)}
-                                    onChange={() => toggleAnime(anime)}
+                                    checked={activeAnime.includes(anime.slug)}
+                                    onChange={() => toggleAnime(anime.slug)}
                                     className="sidebar-checkbox"
                                 />
                                 <span className="label-text">
-                                    {anime.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                                    {anime.name}
                                 </span>
                             </label>
                         </li>
@@ -142,18 +117,18 @@ const ShopSidebar = ({
                     <input
                         type="range"
                         min="0"
-                        max="20000"
+                        max={maxPrice}
                         step="500"
                         value={priceRange}
                         onChange={(e) => setPriceRange(Number(e.target.value))}
                         className="price-slider"
                         style={{
-                            background: `linear-gradient(to right, #9333ea ${(priceRange / 20000) * 100}%, #e2e8f0 ${(priceRange / 20000) * 100}%)`
+                            background: `linear-gradient(to right, #9333ea ${(priceRange / maxPrice) * 100}%, #e2e8f0 ${(priceRange / maxPrice) * 100}%)`
                         }}
                     />
                     <div className="price-labels">
                         <span>₹0</span>
-                        <span>₹20,000+</span>
+                        <span>₹{maxPrice.toLocaleString()}+</span>
                     </div>
                 </div>
             </div>

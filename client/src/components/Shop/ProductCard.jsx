@@ -23,7 +23,7 @@ const getGradient = (id) => gradients[(id || 0) % gradients.length];
 
 const ProductCard = ({ product }) => {
     return (
-        <Link to={`/product/${product.id}`} className="product-card-enhanced">
+        <Link to={`/product/${product._id || product.id}`} className="product-card-enhanced">
             <div className="product-image-container">
                 {/* Gradient Background Replacement */}
                 {product.image ? (
@@ -55,7 +55,7 @@ const ProductCard = ({ product }) => {
             <div className="product-info">
                 <h3 className="product-name">{product.name}</h3>
                 <div className="product-meta-row">
-                    <span className="product-category">{product.category} Series</span>
+                    <span className="product-category">{product.categoryName || product.category}</span>
                     <span className="product-rating">★ {product.rating || 'New'}</span>
                 </div>
                 <div className="product-price-row">

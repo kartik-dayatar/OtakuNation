@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Download, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Download, Search, Eye } from 'lucide-react';
 import useAdminStore from '../../store/adminStore';
 import './AdminOrders.css';
 
@@ -152,9 +153,9 @@ function AdminOrders() {
                                     </td>
                                     <td className="price text-right fw-600">₹{order.total.toFixed(2)}</td>
                                     <td className="text-center">
-                                        <button className={`btn ${order.fulfillment === 'Pending' ? 'primary' : 'ghost'} small round-btn`}>
-                                            {order.fulfillment === 'Pending' ? 'Fulfill' : 'View'}
-                                        </button>
+                                        <Link to={`/admin/orders/${order.dbId}`} className="btn ghost small round-btn flex-icon" style={{ gap: '4px' }}>
+                                            <Eye size={14} /> Details
+                                        </Link>
                                     </td>
                                 </tr>
                             )) : (
