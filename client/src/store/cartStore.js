@@ -14,13 +14,25 @@ const API_URL = 'http://localhost:5000/api/users';
  * The `token` parameter accepted by mutating actions allows callers to pass
  * `useAuthStore.getState().token` without creating a circular import.
  */
+const savedCart = () => {
+    try {
+        const data = localStorage.getItem('on_cart');
+        return data ? JSON.parse(data) : [];
+    } catch {
+        return [];
+    }
+};
+
 const useCartStore = create((set, get) => ({
-    items:   [],
+    items:   savedCart(),
     loading: false,
     error:   null,
 
     // ── Helpers ───────────────────────────────────────
     _authHeader: (token) => ({ Authorization: `Bearer ${token}` }),
+    _persist: () => {
+        localStorage.setItem('on_cart', JSON.stringify(get().items));
+    },
 
     // ─────────────────────────────────────────────────
     // Fetch cart from backend (called after login)
@@ -49,6 +61,7 @@ const useCartStore = create((set, get) => ({
                 quantity:    item.quantity,
             }));
             set({ items, loading: false });
+            get()._persist();
         } catch {
             set({ loading: false });
         }
@@ -92,6 +105,7 @@ const useCartStore = create((set, get) => ({
                 quantity:    item.quantity,
             }));
             set({ items, loading: false });
+            get()._persist();
         } catch {
             set({ loading: false });
         }
@@ -125,6 +139,7 @@ const useCartStore = create((set, get) => ({
                     quantity:    item.quantity,
                 }));
                 set({ items });
+                get()._persist();
             } catch (err) {
                 console.error('addItem error', err);
             }
@@ -141,6 +156,7 @@ const useCartStore = create((set, get) => ({
             } else {
                 set({ items: [...items, { ...product, selectedSize, quantity: 1 }] });
             }
+            get()._persist();
         }
     },
 
@@ -170,15 +186,18 @@ const useCartStore = create((set, get) => ({
                     quantity:    item.quantity,
                 }));
                 set({ items });
+                get()._persist();
             } catch (err) {
                 console.error('removeItem error', err);
             }
         } else {
-            set((state) => ({
-                items: state.items.filter(
+            set((state) => {
+                const newItems = state.items.filter(
                     (item) => !(item.id === id && item.selectedSize === selectedSize)
-                ),
-            }));
+                );
+                return { items: newItems };
+            });
+            get()._persist();
         }
     },
 
@@ -209,6 +228,7 @@ const useCartStore = create((set, get) => ({
                     quantity:    item.quantity,
                 }));
                 set({ items });
+                get()._persist();
             } catch (err) {
                 console.error('updateQuantity error', err);
             }
@@ -217,13 +237,15 @@ const useCartStore = create((set, get) => ({
                 get().removeItem(id, selectedSize, null, null);
                 return;
             }
-            set((state) => ({
-                items: state.items.map((item) =>
+            set((state) => {
+                const newItems = state.items.map((item) =>
                     item.id === id && item.selectedSize === selectedSize
                         ? { ...item, quantity }
                         : item
-                ),
-            }));
+                );
+                return { items: newItems };
+            });
+            get()._persist();
         }
     },
 
@@ -241,6 +263,7 @@ const useCartStore = create((set, get) => ({
             }
         }
         set({ items: [] });
+        localStorage.removeItem('on_cart');
     },
 
     // ─────────────────────────────────────────────────
@@ -249,5 +272,11 @@ const useCartStore = create((set, get) => ({
     getTotal: () => get().items.reduce((t, item) => t + item.price * item.quantity, 0),
     getCount: () => get().items.reduce((c, item) => c + item.quantity, 0),
 }));
+
+// Sync on load if token exists
+const initialToken = localStorage.getItem('on_token');
+if (initialToken) {
+    useCartStore.getState().syncToBackend(initialToken);
+}
 
 export default useCartStore;

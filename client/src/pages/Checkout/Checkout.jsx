@@ -29,6 +29,25 @@ export default function Checkout() {
         phone:         user?.phone || '',
     });
 
+    // ── Autofill default address ──────────────────────
+    React.useEffect(() => {
+        if (user?.addresses?.length > 0) {
+            const defaultAddr = user.addresses.find(a => a.isDefault);
+            if (defaultAddr) {
+                setForm({
+                    recipientName: defaultAddr.recipientName || `${user.firstName} ${user.lastName}`,
+                    addressLine1:  defaultAddr.addressLine1 || '',
+                    addressLine2:  defaultAddr.addressLine2 || '',
+                    city:          defaultAddr.city || '',
+                    state:         defaultAddr.state || '',
+                    postalCode:    defaultAddr.postalCode || '',
+                    country:       defaultAddr.country || 'India',
+                    phone:         defaultAddr.phone || user.phone || '',
+                });
+            }
+        }
+    }, [user]);
+
     // ── Promo state ───────────────────────────────────
     const [promoInput,  setPromoInput]  = useState('');
     const [promoType,   setPromoType]   = useState('coupon'); // 'coupon' | 'giftcard'
