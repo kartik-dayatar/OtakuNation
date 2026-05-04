@@ -9,6 +9,7 @@ const orderItemSchema = new mongoose.Schema({
     productImage: { type: String, default: null },           // filename snapshot
     sizeLabel:    { type: String, default: null },
     unitPrice:    { type: Number, required: true },          // price at purchase
+    purchaseCost: { type: Number, default: 0 },             // cost to store at purchase
     quantity:     { type: Number, required: true, min: 1 },
     lineTotal:    { type: Number, required: true },          // unitPrice × quantity
 });
@@ -53,6 +54,7 @@ const orderSchema = new mongoose.Schema(
         // Financials (all in INR)
         subtotal:       { type: Number, required: true },
         shippingAmount: { type: Number, default: 0 },
+        taxAmount:      { type: Number, default: 0 },       // GST component
         discountAmount: { type: Number, default: 0 },
         totalAmount:    { type: Number, required: true },
 
@@ -63,7 +65,7 @@ const orderSchema = new mongoose.Schema(
         // Payment
         paymentMethod: {
             type:    String,
-            enum:    ["COD", "UPI", "Card", "NetBanking", "Wallet", "GiftCard"],
+            enum:    ["COD", "UPI", "Card", "NetBanking", "Wallet", "GiftCard", "razorpay"],
             default: "COD",
         },
         paymentStatus: {
@@ -72,7 +74,9 @@ const orderSchema = new mongoose.Schema(
             default: "pending",
         },
         paymentReference:   { type: String, default: null },  // gateway tx ID
+        paymentDetails:     { type: String, default: null },  // e.g. "Visa Card ****1234"
         razorpayPaymentId:  { type: String, default: null },
+        razorpayOrderId:    { type: String, default: null },
 
         // Fulfilment lifecycle
         status: {
@@ -80,10 +84,30 @@ const orderSchema = new mongoose.Schema(
             enum:    ["confirmed", "processing", "shipped", "out_for_delivery", "delivered", "cancelled", "returned"],
             default: "confirmed",
         },
+        carrierName:       { type: String, default: null },  // e.g. "Delhivery"
         trackingId:        { type: String, default: null },
         estimatedDelivery: { type: Date,   default: null },
         deliveredAt:       { type: Date,   default: null },
         notes:             { type: String, default: "" },
+
+        // Cancellation fields
+        cancelReason: { type: String, default: null },
+        cancelledAt: { type: Date, default: null },
+        cancelledBy: { type: String, enum: ["user", "admin"], default: null },
+
+        // Return fields
+        returnRequested: { type: Boolean, default: false },
+        returnReason: { type: String, default: null },
+        returnRequestedAt: { type: Date, default: null },
+        returnStatus: { 
+            type: String, 
+            enum: ["none", "requested", "approved", "rejected"], 
+            default: "none" 
+        },
+
+        // Security / Audit
+        ipAddress: { type: String, default: null },
+        userAgent: { type: String, default: null },
 
         // Embedded audit trail
         statusHistory: [statusHistorySchema],

@@ -2,8 +2,8 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const GiftCard = require("../models/GiftCard");
-const User = require("../models/User");
-const { sendOrderConfirmationEmail } = require("../utils/emailService");
+const User     = require("../models/User");
+const emailService = require("../utils/emailService");
 
 // ────────────────────────────────────────────────────
 // POST /api/orders   (protected)
@@ -53,11 +53,13 @@ const createOrder = async (req, res, next) => {
                 product: product._id,
                 productName: product.name,
                 productImage: product.images?.find((i) => i.isPrimary)?.url
-                    || product.images?.[0]?.url
-                    || null,
-                sizeLabel: incoming.sizeLabel || null,
+                              || product.images?.[0]?.url
+                              || null,
+                sizeLabel:    incoming.sizeLabel || null,
+                colorLabel:   incoming.colorLabel || null,
                 unitPrice,
-                quantity: qty,
+                purchaseCost: product.costPrice || 0,
+                quantity:     qty,
                 lineTotal,
             });
         }
@@ -67,7 +69,12 @@ const createOrder = async (req, res, next) => {
         const FLAT_SHIPPING = 99;
         const shippingAmount = subtotal >= FREE_SHIPPING_MIN ? 0 : FLAT_SHIPPING;
 
-        // ── 3. Coupon validation ──────────────────────────
+        // ── 3. Financials (Tax calculation) ───────────────
+        // Assuming 18% GST is included in the price (Reverse GST calculation)
+        // GST Amount = Amount - [Amount * (100 / (100 + GST%))]
+        const taxAmount = Math.round(subtotal - (subtotal * (100 / 118)));
+
+        // ── 4. Coupon validation ──────────────────────────
         let discountAmount = 0;
         let appliedCoupon = null;
         let appliedCouponCode = null;
@@ -112,7 +119,7 @@ const createOrder = async (req, res, next) => {
             await Coupon.findByIdAndUpdate(coupon._id, { $inc: { usesCount: 1 } });
         }
 
-        // ── 4. Gift Card validation ───────────────────────
+        // ── 5. Gift Card validation ───────────────────────
         let giftCardDiscount = 0;
 
         if (giftCardCode) {
@@ -144,11 +151,11 @@ const createOrder = async (req, res, next) => {
             await giftCard.save();
         }
 
-        // ── 5. Final total ────────────────────────────────
-        const totalDiscount = discountAmount + giftCardDiscount;
-        const totalAmount = Math.max(0, subtotal + shippingAmount - totalDiscount);
+        // ── 6. Final total ────────────────────────────────
+        const totalDiscount  = discountAmount + giftCardDiscount;
+        const totalAmount    = Math.max(0, subtotal + shippingAmount - totalDiscount);
 
-        // ── 6. Create order ───────────────────────────────
+        // ── 7. Create order ───────────────────────────────
         const order = await Order.create({
             user: req.user._id,
             items: snapshotItems,
@@ -156,19 +163,50 @@ const createOrder = async (req, res, next) => {
             paymentMethod: paymentMethod || "COD",
             subtotal,
             shippingAmount,
-            discountAmount: totalDiscount,
+            taxAmount,
+            discountAmount:  totalDiscount,
             totalAmount,
             coupon: appliedCoupon,
             couponCode: appliedCouponCode,
             estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            ipAddress:       req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            userAgent:       req.headers['user-agent'],
         });
 
-        // ── 7. Clear user's cart ──────────────────────────
+        // ── 7. Update Stock & Check Low Stock ───────────
+        const lowStockProducts = [];
+        for (const item of snapshotItems) {
+            const updatedProduct = await Product.findByIdAndUpdate(
+                item.product,
+                { $inc: { stockQuantity: -item.quantity } },
+                { new: true }
+            );
+            if (updatedProduct && updatedProduct.stockQuantity <= 5) {
+                lowStockProducts.push(updatedProduct);
+            }
+        }
+
+        // ── 8. Send Emails (Fire & Forget) ────────────────
+        emailService.sendOrderConfirmation(req.user, {
+            ...order.toObject(),
+            items: snapshotItems.map(i => ({
+                name:  i.productName,
+                image: i.productImage,
+                quantity: i.quantity,
+                price: i.unitPrice
+            })),
+            subtotal,
+            shippingCost: shippingAmount,
+            discount: totalDiscount
+        }).catch(console.error);
+
+        if (lowStockProducts.length > 0) {
+            emailService.sendLowStockAlert(lowStockProducts).catch(console.error);
+        }
+
+        // ── 9. Clear user's cart ──────────────────────────
         await User.findByIdAndUpdate(req.user._id, { $set: { cart: [] } });
 
-        // ── 8. Send Confirmation Email (Async, don't await if you want speed, but safer to await or fire-and-forget with error catch)
-        // We fire-and-forget to keep checkout fast, the service already catches errors
-        sendOrderConfirmationEmail(order, req.user);
 
         res.status(201).json(order);
     } catch (err) {
@@ -239,7 +277,7 @@ const getAllOrders = async (req, res, next) => {
 const updateOrderStatus = async (req, res, next) => {
     try {
         const { status, note } = req.body;
-        const order = await Order.findById(req.params.id);
+        const order = await Order.findById(req.params.id).populate("user", "firstName lastName email");
 
         if (!order) {
             res.status(404);
@@ -255,6 +293,25 @@ const updateOrderStatus = async (req, res, next) => {
         }
 
         const updated = await order.save();
+
+        // Send Status Emails
+        const emailData = {
+            ...updated.toObject(),
+            items: updated.items.map(i => ({ name: i.productName, quantity: i.quantity }))
+        };
+
+        if (status === "shipped") {
+            emailService.sendOrderShipped(updated.user, emailData).catch(console.error);
+        } else if (status === "out_for_delivery") {
+            emailService.sendOrderOutForDelivery(updated.user, emailData).catch(console.error);
+        } else if (status === "delivered") {
+            emailService.sendOrderDelivered(updated.user, emailData).catch(console.error);
+        } else if (status === "cancelled") {
+            emailService.sendOrderCancelled(updated.user, emailData).catch(console.error);
+        } else if (status === "payment_failed") {
+            emailService.sendPaymentFailed(updated.user, emailData).catch(console.error);
+        }
+
         res.json(updated);
     } catch (err) {
         next(err);
@@ -266,27 +323,115 @@ const updateOrderStatus = async (req, res, next) => {
 // ────────────────────────────────────────────────────
 const cancelOrder = async (req, res, next) => {
     try {
-        const order = await Order.findById(req.params.id);
+        const order = await Order.findById(req.params.id).populate("user", "firstName lastName email");
 
         if (!order) {
             res.status(404);
             throw new Error("Order not found");
         }
 
-        if (order.user.toString() !== req.user._id.toString()) {
+        if (order.user._id.toString() !== req.user._id.toString()) {
             res.status(403);
             throw new Error("Not authorised to cancel this order");
         }
 
-        if (["shipped", "delivered"].includes(order.status)) {
+        // Cancellation Rule: Allowed only if confirmed or processing
+        if (!["confirmed", "processing"].includes(order.status)) {
             res.status(400);
-            throw new Error("Cannot cancel an already shipped or delivered order");
+            throw new Error("Order cannot be cancelled at this stage");
         }
 
+        // Update Order
+        const reason = req.body.reason || "Changed my mind";
         order.status = "cancelled";
-        order.statusHistory.push({ status: "cancelled", note: req.body.reason || "Cancelled by user" });
-        await order.save();
-        res.json({ message: "Order cancelled", order });
+        order.cancelReason = reason;
+        order.cancelledAt = new Date();
+        order.cancelledBy = "user";
+        order.statusHistory.push({ status: "cancelled", note: `Cancelled by user. Reason: ${reason}` });
+
+        // Restore product stock
+        for (const item of order.items) {
+            await Product.findByIdAndUpdate(
+                item.product,
+                { $inc: { stockQuantity: item.quantity } }
+            );
+        }
+
+        // Handle refund initiation for paid orders
+        if (order.paymentStatus === "paid") {
+            order.paymentStatus = "refund_initiated";
+        }
+
+        const updated = await order.save();
+
+        // Send cancellation email
+        const emailData = {
+            ...updated.toObject(),
+            cancellationReason: reason,
+            items: updated.items.map(i => ({ name: i.productName, quantity: i.quantity }))
+        };
+        emailService.sendOrderCancelled(updated.user, emailData).catch(console.error);
+
+        res.json(updated);
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// POST /api/orders/:id/return   (protected user)
+// ────────────────────────────────────────────────────
+const requestReturn = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id).populate("user", "firstName lastName email");
+
+        if (!order) {
+            res.status(404);
+            throw new Error("Order not found");
+        }
+
+        if (order.user._id.toString() !== req.user._id.toString()) {
+            res.status(403);
+            throw new Error("Not authorised to request return for this order");
+        }
+
+        if (order.status !== "delivered") {
+            res.status(400);
+            throw new Error("Only delivered orders can be returned");
+        }
+
+        if (!order.deliveredAt) {
+            res.status(400);
+            throw new Error("Delivery date not recorded. Please contact support.");
+        }
+
+        // Check 7-day window
+        const daysSinceDelivery = (Date.now() - order.deliveredAt) / (1000 * 60 * 60 * 24);
+        if (daysSinceDelivery > 7) {
+            res.status(400);
+            throw new Error("Return window of 7 days has expired");
+        }
+
+        if (order.returnRequested) {
+            res.status(400);
+            throw new Error("Return already requested for this order");
+        }
+
+        // Update Order
+        const reason = req.body.reason || "No reason provided";
+        order.returnRequested = true;
+        order.returnReason = reason;
+        order.returnRequestedAt = new Date();
+        order.returnStatus = "requested";
+        order.statusHistory.push({ status: "returned", note: `Return requested. Reason: ${reason}` });
+
+        const updated = await order.save();
+
+        // Send Emails
+        emailService.sendReturnRequestConfirmation(updated.user, updated).catch(console.error);
+        emailService.sendAdminReturnNotification(updated).catch(console.error);
+
+        res.json(updated);
     } catch (err) {
         next(err);
     }
@@ -364,5 +509,5 @@ const validatePromo = async (req, res, next) => {
 
 module.exports = {
     createOrder, getMyOrders, getOrderById, getAllOrders,
-    updateOrderStatus, cancelOrder, validatePromo,
+    updateOrderStatus, cancelOrder, requestReturn, validatePromo,
 };

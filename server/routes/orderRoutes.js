@@ -8,6 +8,7 @@ const {
     getAllOrders,
     updateOrderStatus,
     cancelOrder,
+    requestReturn,
     validatePromo,
 } = require("../controllers/orderController");
 
@@ -21,7 +22,8 @@ router.post("/",                  createOrder);
 router.post("/validate-promo",    validatePromo);   // validate coupon/giftcard before checkout
 router.get("/mine",               getMyOrders);
 router.get("/:id",                getOrderById);
-router.put("/:id/cancel",         cancelOrder);
+router.post("/:id/cancel",        cancelOrder);
+router.post("/:id/return",        requestReturn);
 
 // Admin routes
 router.get("/",                   adminOnly, getAllOrders);

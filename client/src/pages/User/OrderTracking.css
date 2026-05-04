@@ -226,23 +226,36 @@
     color: var(--text-muted);
 }
 
+.ot-item-actions {
+    margin-top: 12px;
+}
+
+.ot-reviewed-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bcf0da;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 .ot-review-btn {
-    margin-top: 8px;
-    padding: 6px 14px;
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #cbd5e1;
+    padding: 6px 16px;
+    background: #6366f1;
+    color: #fff;
+    border: none;
     border-radius: 6px;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s;
 }
 
 .ot-review-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-    border-color: #94a3b8;
+    background: #4f46e5;
 }
 
 .ot-item-price {
@@ -380,4 +393,191 @@
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+/* Post-purchase Actions Card */
+.ot-actions-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.ot-cancel-section, .ot-return-section {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 24px;
+}
+
+.ot-cancel-section:last-child, .ot-return-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.ot-actions-card h3 {
+    font-size: 1.1rem;
+    margin: 0 0 8px;
+    color: #1e293b;
+}
+
+.ot-actions-card p {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0 0 16px;
+}
+
+.ot-cancel-btn {
+    background: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ot-cancel-btn:hover {
+    background: #fef2f2;
+}
+
+.ot-return-btn {
+    background: transparent;
+    border: 1px solid #f97316;
+    color: #f97316;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ot-return-btn:hover {
+    background: #fff7ed;
+}
+
+.ot-return-deadline {
+    margin-top: 12px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500;
+}
+
+.ot-return-deadline.warning {
+    color: #f97316 !important;
+}
+
+/* Return Status Badge */
+.ot-return-status-section {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.ot-return-badge {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.ot-return-badge.requested { background: #ffedd5; color: #9a3412; }
+.ot-return-badge.approved { background: #dcfce7; color: #166534; }
+.ot-return-badge.rejected { background: #fee2e2; color: #991b1b; }
+
+.ot-return-note {
+    margin-top: 12px !important;
+    margin-bottom: 0 !important;
+    font-weight: 500;
+}
+
+/* Modal Styles */
+.ot-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.ot-modal-content {
+    background: #fff;
+    width: 100%;
+    max-width: 450px;
+    border-radius: 20px;
+    padding: 32px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+}
+
+.ot-modal-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: none; border: none;
+    font-size: 1.2rem; color: #94a3b8;
+    cursor: pointer;
+}
+
+.ot-modal-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.ot-modal-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 2rem;
+}
+
+.ot-modal-icon.cancel { background: #fef2f2; color: #ef4444; }
+
+.ot-modal-content h2 {
+    margin: 0; font-size: 1.5rem; color: #1e293b;
+}
+
+.ot-modal-body {
+    text-align: center; color: #64748b;
+    margin-bottom: 24px; font-size: 0.95rem;
+}
+
+.ot-modal-select, .ot-modal-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    outline: none;
+}
+
+.ot-modal-select:focus, .ot-modal-textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.ot-modal-note {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 24px;
+}
+
+.ot-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.ot-modal-actions .btn {
+    flex: 1; justify-content: center; height: 48px;
 }
