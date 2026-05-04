@@ -9,7 +9,7 @@ function AdminAddProduct() {
     const navigate = useNavigate();
     const { addToast } = useToast();
     const { addProduct } = useProductStore();
-    const { series, fetchCategoriesAndSeries } = useAdminStore();
+    const { categories, series, fetchCategoriesAndSeries } = useAdminStore();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [tags, setTags] = useState(['anime', 'new arrival']);
@@ -133,7 +133,9 @@ function AdminAddProduct() {
             addToast(`Product ${actionType === 'publish' ? 'published' : 'saved as draft'} successfully!`, 'success');
             navigate('/admin/inventory');
         } catch (err) {
-            addToast('Failed to save product. Please try again.', 'error');
+            const msg = err.response?.data?.message || err.message || 'Failed to save product. Please try again.';
+            addToast(msg, 'error');
+            console.error('[AdminAddProduct] addProduct error:', err.response?.data || err.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -202,15 +204,9 @@ function AdminAddProduct() {
                                 <label className="form-label">Category <span className="required">*</span></label>
                                 <select name="category" value={formData.category} onChange={handleChange} className="form-select" required>
                                     <option value="" disabled>Select a category</option>
-                                    <option value="clothing">👕 Clothing</option>
-                                    <option value="figures">⚡ Figures</option>
-                                    <option value="accessories">🎒 Accessories</option>
-                                    <option value="posters">🖼️ Posters</option>
-                                    <option value="collectibles">⭐ Collectibles</option>
-                                    <option value="manga">📓 Manga</option>
-                                    <option value="plushies">🧸 Plushies</option>
-                                    <option value="stationery">✏️ Stationery</option>
-                                    <option value="home_decor">🏠 Home & Décor</option>
+                                    {categories && categories.map(c => (
+                                        <option key={c._id} value={c.slug}>{c.iconEmoji || '📂'} {c.name}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="form-group">

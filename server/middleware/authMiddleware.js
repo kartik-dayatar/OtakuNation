@@ -32,6 +32,7 @@ const adminOnly = (req, res, next) => {
     if (req.user && req.user.role === "admin") {
         return next();
     }
+    console.warn(`[Auth] 403 Forbidden: User ${req.user?.email} (role: ${req.user?.role}) attempted to access admin route: ${req.originalUrl}`);
     return res.status(403).json({ message: "Access denied – admins only" });
 };
 

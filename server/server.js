@@ -52,6 +52,20 @@ app.use(express.urlencoded({ extended: true }));
 // ── Serve Static Uploads ──────────────────────────────
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
+// ── Debug Request Logger (remove in production) ──────
+if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        const originalSend = res.json.bind(res);
+        res.json = function (data) {
+            if (res.statusCode >= 400) {
+                console.log(`[${req.method}] ${req.originalUrl} → ${res.statusCode}`, data?.message || '');
+            }
+            return originalSend(data);
+        };
+        next();
+    });
+}
+
 // ── Health Check ─────────────────────────────────────
 app.get("/api/health", (req, res) => {
     res.json({ status: "OK", message: "Otaku Nation API is running \uD83C\uDF8C" });

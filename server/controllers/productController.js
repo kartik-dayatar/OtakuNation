@@ -188,15 +188,29 @@ const createProduct = async (req, res, next) => {
 
         // Convert UI category string (slug) to ObjectId
         if (payload.category && typeof payload.category === "string") {
-            const cat = await Category.findOne({ slug: payload.category.toLowerCase() });
-            if (cat) payload.category = cat._id;
+            const slug = payload.category.toLowerCase().trim();
+            const cat = await Category.findOne({ slug });
+            if (cat) {
+                payload.category = cat._id;
+            } else {
+                console.warn(`[createProduct] Category not found for slug: "${slug}"`);
+                return res.status(400).json({ message: `Category "${slug}" not found in the database.` });
+            }
         }
 
-        // Convert UI animeSeries string to ObjectId (if it exists)
+        // Convert UI animeSeries string (slug or name) to ObjectId
         if (payload.animeSeries && typeof payload.animeSeries === "string") {
-            const seriesSlug = payload.animeSeries.toLowerCase().replace(/\s+/g, '-');
-            const series = await AnimeSeries.findOne({ slug: seriesSlug });
-            if (series) payload.animeSeries = series._id;
+            const raw = payload.animeSeries.trim();
+            const slugified = raw.toLowerCase().replace(/\s+/g, "-");
+            const series = await AnimeSeries.findOne({
+                $or: [{ slug: slugified }, { name: { $regex: new RegExp(`^${raw}$`, "i") } }]
+            });
+            if (series) {
+                payload.animeSeries = series._id;
+            } else {
+                console.warn(`[createProduct] AnimeSeries not found: "${raw}" — skipping`);
+                delete payload.animeSeries;
+            }
         }
 
         // Handle Tags (sent as JSON string in FormData)
@@ -208,7 +222,20 @@ const createProduct = async (req, res, next) => {
             }
         }
 
-        // Handle File Upload or UI flat image string
+        // Convert booleans from strings (FormData sends everything as strings)
+        const toBool = v => v === 'true' ? true : v === 'false' ? false : v;
+        if (payload.isFeatured   !== undefined) payload.isFeatured   = toBool(payload.isFeatured);
+        if (payload.isNewArrival !== undefined) payload.isNewArrival = toBool(payload.isNewArrival);
+        if (payload.isBestSeller !== undefined) payload.isBestSeller = toBool(payload.isBestSeller);
+
+        // Cast numeric fields
+        if (payload.price          !== undefined) payload.price          = Number(payload.price) || 0;
+        if (payload.comparePrice   !== undefined) payload.comparePrice   = payload.comparePrice   ? Number(payload.comparePrice)   : null;
+        if (payload.costPrice      !== undefined) payload.costPrice      = payload.costPrice      ? Number(payload.costPrice)      : null;
+        if (payload.lowStockThreshold !== undefined) payload.lowStockThreshold = Number(payload.lowStockThreshold) || 5;
+        if (payload.weight         !== undefined) { payload.weightGrams  = Number(payload.weight) || null; delete payload.weight; }
+
+        // Handle File Upload — store only the filename; resolveImgPath in getProducts adds full URL
         if (req.file) {
             payload.images = [{ url: req.file.filename, isPrimary: true }];
         } else if (payload.image && typeof payload.image === "string" && !payload.images) {
@@ -216,14 +243,35 @@ const createProduct = async (req, res, next) => {
             delete payload.image;
         }
 
-        // Convert inStock boolean and flat stock integer to stockQuantity
+        // Map 'stock' from frontend to 'stockQuantity' in schema
         if (payload.stock !== undefined) {
-            payload.stockQuantity = Number(payload.stock);
+            payload.stockQuantity = Number(payload.stock) || 0;
+            delete payload.stock;
         }
 
+        // Auto-generate slug if empty
+        if (!payload.slug && payload.name) {
+            payload.slug = payload.name.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+        }
+
+        console.log("[createProduct] final payload keys:", Object.keys(payload));
         const product = await Product.create(payload);
+        console.log("[createProduct] created:", product._id);
         res.status(201).json(product);
     } catch (err) {
+        console.error("[createProduct] ERROR:", err.message);
+        if (err.name === 'ValidationError') {
+            const msgs = Object.values(err.errors).map(e => e.message);
+            return res.status(400).json({ message: `Validation failed: ${msgs.join(', ')}` });
+        }
+        if (err.code === 11000) {
+            const field = Object.keys(err.keyValue || {})[0] || 'field';
+            return res.status(409).json({ message: `A product with this ${field} already exists.` });
+        }
         next(err);
     }
 };
