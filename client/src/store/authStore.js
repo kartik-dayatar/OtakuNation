@@ -86,6 +86,33 @@ const useAuthStore = create((set, get) => ({
         useWishlistStore.getState().clearWishlist();
     },
 
+    // ── Forgot/Reset Password ────────────────────────
+    forgotPassword: async (email) => {
+        set({ loading: true, error: null });
+        try {
+            const { data } = await axios.post(`${API_URL}/forgot-password`, { email });
+            set({ loading: false });
+            return { success: true, message: data.message };
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to send reset link';
+            set({ loading: false, error: msg });
+            return { success: false, message: msg };
+        }
+    },
+
+    resetPassword: async (token, password) => {
+        set({ loading: true, error: null });
+        try {
+            const { data } = await axios.post(`${API_URL}/reset-password/${token}`, { password });
+            set({ loading: false });
+            return { success: true, message: data.message };
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to reset password';
+            set({ loading: false, error: msg });
+            return { success: false, message: msg };
+        }
+    },
+
     // ── Profile and Addresses ────────────────────────
     fetchProfile: async () => {
         set({ loading: true, error: null });

@@ -1,8 +1,9 @@
-const Order    = require("../models/Order");
-const Product  = require("../models/Product");
-const Coupon   = require("../models/Coupon");
+const Order = require("../models/Order");
+const Product = require("../models/Product");
+const Coupon = require("../models/Coupon");
 const GiftCard = require("../models/GiftCard");
-const User     = require("../models/User");
+const User = require("../models/User");
+const { sendOrderConfirmationEmail } = require("../utils/emailService");
 
 // ────────────────────────────────────────────────────
 // POST /api/orders   (protected)
@@ -43,36 +44,36 @@ const createOrder = async (req, res, next) => {
                 throw new Error(`Product "${product.name}" is no longer available`);
             }
 
-            const qty       = Number(incoming.quantity) || 1;
+            const qty = Number(incoming.quantity) || 1;
             const unitPrice = product.price;
             const lineTotal = unitPrice * qty;
-            subtotal       += lineTotal;
+            subtotal += lineTotal;
 
             snapshotItems.push({
-                product:      product._id,
-                productName:  product.name,
+                product: product._id,
+                productName: product.name,
                 productImage: product.images?.find((i) => i.isPrimary)?.url
-                              || product.images?.[0]?.url
-                              || null,
-                sizeLabel:    incoming.sizeLabel || null,
+                    || product.images?.[0]?.url
+                    || null,
+                sizeLabel: incoming.sizeLabel || null,
                 unitPrice,
-                quantity:     qty,
+                quantity: qty,
                 lineTotal,
             });
         }
 
         // ── 2. Shipping ───────────────────────────────────
         const FREE_SHIPPING_MIN = 5000;
-        const FLAT_SHIPPING     = 99;
-        const shippingAmount    = subtotal >= FREE_SHIPPING_MIN ? 0 : FLAT_SHIPPING;
+        const FLAT_SHIPPING = 99;
+        const shippingAmount = subtotal >= FREE_SHIPPING_MIN ? 0 : FLAT_SHIPPING;
 
         // ── 3. Coupon validation ──────────────────────────
         let discountAmount = 0;
-        let appliedCoupon  = null;
+        let appliedCoupon = null;
         let appliedCouponCode = null;
 
         if (couponCode) {
-            const code   = couponCode.trim().toUpperCase();
+            const code = couponCode.trim().toUpperCase();
             const coupon = await Coupon.findOne({ code, isActive: true });
 
             if (!coupon) {
@@ -104,7 +105,7 @@ const createOrder = async (req, res, next) => {
                 discountAmount = Math.min(coupon.value, subtotal);
             }
 
-            appliedCoupon     = coupon._id;
+            appliedCoupon = coupon._id;
             appliedCouponCode = code;
 
             // Increment usage count atomically
@@ -115,7 +116,7 @@ const createOrder = async (req, res, next) => {
         let giftCardDiscount = 0;
 
         if (giftCardCode) {
-            const gcCode   = giftCardCode.trim().toUpperCase();
+            const gcCode = giftCardCode.trim().toUpperCase();
             const giftCard = await GiftCard.findOne({ code: gcCode, isActive: true });
 
             if (!giftCard) {
@@ -144,26 +145,30 @@ const createOrder = async (req, res, next) => {
         }
 
         // ── 5. Final total ────────────────────────────────
-        const totalDiscount  = discountAmount + giftCardDiscount;
-        const totalAmount    = Math.max(0, subtotal + shippingAmount - totalDiscount);
+        const totalDiscount = discountAmount + giftCardDiscount;
+        const totalAmount = Math.max(0, subtotal + shippingAmount - totalDiscount);
 
         // ── 6. Create order ───────────────────────────────
         const order = await Order.create({
-            user:            req.user._id,
-            items:           snapshotItems,
+            user: req.user._id,
+            items: snapshotItems,
             shippingAddress,
-            paymentMethod:   paymentMethod || "COD",
+            paymentMethod: paymentMethod || "COD",
             subtotal,
             shippingAmount,
-            discountAmount:  totalDiscount,
+            discountAmount: totalDiscount,
             totalAmount,
-            coupon:          appliedCoupon,
-            couponCode:      appliedCouponCode,
+            coupon: appliedCoupon,
+            couponCode: appliedCouponCode,
             estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
 
         // ── 7. Clear user's cart ──────────────────────────
         await User.findByIdAndUpdate(req.user._id, { $set: { cart: [] } });
+
+        // ── 8. Send Confirmation Email (Async, don't await if you want speed, but safer to await or fire-and-forget with error catch)
+        // We fire-and-forget to keep checkout fast, the service already catches errors
+        sendOrderConfirmationEmail(order, req.user);
 
         res.status(201).json(order);
     } catch (err) {
@@ -215,7 +220,7 @@ const getAllOrders = async (req, res, next) => {
         const { status, page = 1, limit = 20 } = req.query;
         const filter = status ? { status } : {};
 
-        const total  = await Order.countDocuments(filter);
+        const total = await Order.countDocuments(filter);
         const orders = await Order.find(filter)
             .populate("user", "firstName lastName email")
             .sort({ createdAt: -1 })
@@ -245,7 +250,7 @@ const updateOrderStatus = async (req, res, next) => {
         order.statusHistory.push({ status, note: note || "" });
 
         if (status === "delivered") {
-            order.deliveredAt   = new Date();
+            order.deliveredAt = new Date();
             order.paymentStatus = "paid";
         }
 
@@ -297,7 +302,7 @@ const validatePromo = async (req, res, next) => {
         const { couponCode, giftCardCode, subtotal } = req.body;
 
         if (couponCode) {
-            const code   = couponCode.trim().toUpperCase();
+            const code = couponCode.trim().toUpperCase();
             const coupon = await Coupon.findOne({ code, isActive: true });
 
             if (!coupon)
@@ -328,7 +333,7 @@ const validatePromo = async (req, res, next) => {
         }
 
         if (giftCardCode) {
-            const gcCode   = giftCardCode.trim().toUpperCase();
+            const gcCode = giftCardCode.trim().toUpperCase();
             const giftCard = await GiftCard.findOne({ code: gcCode, isActive: true });
 
             if (!giftCard)

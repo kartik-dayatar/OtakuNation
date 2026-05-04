@@ -1,8 +1,41 @@
+import React, { useState } from 'react';
 import { FaGlobe, FaEnvelope, FaPhone, FaClock } from 'react-icons/fa';
 import narutoFloat from '../../assets/images/hero/naruto_float.png';
 import './Contact.css';
+import axios from 'axios';
 
 export default function Contact() {
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        message: ''
+    });
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState(null);
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setStatus(null);
+
+        try {
+            const { data } = await axios.post('http://localhost:5000/api/contact', formData);
+            setStatus({ type: 'success', message: data.message });
+            setFormData({ fullName: '', email: '', message: '' });
+        } catch (error) {
+            setStatus({
+                type: 'error',
+                message: error.response?.data?.message || 'Something went wrong. Please try again later.'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <main className="contact-main">
             <section className="contact-hero">
@@ -13,23 +46,54 @@ export default function Contact() {
 
                 <div className="contact-shell">
                     <div className="contact-form-card">
-                        <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+                        <form className="contact-form" onSubmit={handleSubmit}>
+                            {status && (
+                                <div className={`status-message ${status.type}`}>
+                                    {status.message}
+                                </div>
+                            )}
                             <label className="login-field">
                                 <span className="login-label">Full Name</span>
-                                <input type="text" name="fullName" placeholder="Your name" className="form-input" />
+                                <input
+                                    type="text"
+                                    name="fullName"
+                                    placeholder="Your name"
+                                    className="form-input"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    required
+                                />
                             </label>
 
                             <label className="login-field">
                                 <span className="login-label">Email</span>
-                                <input type="email" name="email" placeholder="you@otakunation.com" className="form-input" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="you@otakunation.com"
+                                    className="form-input"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
                             </label>
 
                             <label className="login-field">
                                 <span className="login-label">Message</span>
-                                <textarea name="message" rows="4" placeholder="Tell us how we can help" className="form-input textarea"></textarea>
+                                <textarea
+                                    name="message"
+                                    rows="4"
+                                    placeholder="Tell us how we can help"
+                                    className="form-input textarea"
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    required
+                                ></textarea>
                             </label>
 
-                            <button type="submit" className="btn primary contact-btn-full">Send message</button>
+                            <button type="submit" className="btn primary contact-btn-full" disabled={loading}>
+                                {loading ? 'Sending...' : 'Send message'}
+                            </button>
                         </form>
                     </div>
 

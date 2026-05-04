@@ -15,6 +15,7 @@ const refundRoutes = require("./routes/refundRoutes");
 const articleRoutes = require("./routes/articleRoutes");
 const siteSettingRoutes = require("./routes/siteSettingRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 // ── Register all Mongoose models at startup ──────────────
@@ -64,6 +65,7 @@ app.use("/api/refunds", refundRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/settings", siteSettingRoutes);
 app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/contact", contactRoutes);
 
 // ── Error Handling ───────────────────────────────────
 app.use(notFound);

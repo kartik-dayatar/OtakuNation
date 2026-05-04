@@ -1,6 +1,8 @@
 const jwt   = require("jsonwebtoken");
 const User  = require("../models/User");
 const Order = require("../models/Order");
+const crypto = require("crypto");
+const { sendPasswordResetEmail } = require("../utils/emailService");
 
 // ── Helper: sign JWT ─────────────────────────────────
 const signToken = (id) =>
@@ -92,6 +94,79 @@ const adminLogin = async (req, res, next) => {
 
         const token = signToken(user._id);
         res.json({ token, user: safeUser(user) });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// POST /api/users/forgot-password
+// ────────────────────────────────────────────────────
+const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            res.status(400);
+            throw new Error("Email is required");
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            // Return 200 even if user doesn't exist to prevent email enumeration
+            return res.json({ message: "If an account exists with this email, a password reset link has been sent." });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        
+        user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+        user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+
+        await user.save();
+
+        const emailSent = await sendPasswordResetEmail(user.email, resetToken);
+
+        if (!emailSent) {
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            await user.save();
+            res.status(500);
+            throw new Error("There was an error sending the email. Try again later!");
+        }
+
+        res.json({ message: "If an account exists with this email, a password reset link has been sent." });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// POST /api/users/reset-password/:token
+// ────────────────────────────────────────────────────
+const resetPassword = async (req, res, next) => {
+    try {
+        const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+
+        const user = await User.findOne({
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            res.status(400);
+            throw new Error("Token is invalid or has expired");
+        }
+
+        if (!req.body.password || req.body.password.length < 8) {
+            res.status(400);
+            throw new Error("Password must be at least 8 characters");
+        }
+
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.json({ message: "Password updated successfully." });
     } catch (err) {
         next(err);
     }
@@ -442,6 +517,7 @@ const deleteUser = async (req, res, next) => {
 
 module.exports = {
     register, login, adminLogin, getProfile, updateProfile,
+    forgotPassword, resetPassword,
     addAddress, deleteAddress, getAllUsers, getCustomerById, deleteUser,
     getCart, addToCart, updateCartItem, removeFromCart, clearCart, syncCart,
     getWishlist, toggleWishlist,

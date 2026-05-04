@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import useAuthStore from '../../store/authStore';
 import './Login.css'; // Reusing Login styles for consistent branding
 
 export default function ForgotPassword() {
-    const navigate = useNavigate();
+    const { forgotPassword, loading } = useAuthStore();
     const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
-    const handleResetPassword = (e) => {
+    const handleResetPassword = async (e) => {
         e.preventDefault();
-        // Here you would typically handle the API call to send a reset link
-        // For now, we'll navigate back to login after an alert or just redirect
-        alert("If an account exists with this email, a password reset link has been sent.");
-        navigate('/login');
+        setMessage('');
+        setError('');
+        
+        if (!email) {
+            setError('Please enter your email.');
+            return;
+        }
+
+        const result = await forgotPassword(email);
+        if (result.success) {
+            setMessage(result.message);
+        } else {
+            setError(result.message);
+        }
     };
 
     return (
@@ -48,7 +61,20 @@ export default function ForgotPassword() {
                             />
                         </label>
 
-                        <button type="submit" className="btn primary login-btn-full auth-primary-submit" style={{ marginTop: '32px' }}>Send Reset Link</button>
+                        {message && (
+                            <div className="field-success-msg" style={{ color: 'green', textAlign: 'center', marginBottom: '10px' }}>
+                                {message}
+                            </div>
+                        )}
+                        {error && (
+                            <div className="field-error-msg" style={{ color: 'red', textAlign: 'center', marginBottom: '10px' }}>
+                                {error}
+                            </div>
+                        )}
+
+                        <button type="submit" className="btn primary login-btn-full auth-primary-submit" style={{ marginTop: '16px' }} disabled={loading}>
+                            {loading ? 'Sending...' : 'Send Reset Link'}
+                        </button>
 
                         <p className="login-bottom-text" style={{ marginTop: '24px' }}>
                             Remember your password? <Link to="/login" className="login-link-small">Log in</Link>

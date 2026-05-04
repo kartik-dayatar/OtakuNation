@@ -1,4 +1,5 @@
 const Newsletter = require('../models/Newsletter');
+const { sendNewsletterWelcomeEmail } = require('../utils/emailService');
 
 // @desc    Subscribe to newsletter
 // @route   POST /api/newsletter/subscribe
@@ -26,6 +27,9 @@ const subscribe = async (req, res, next) => {
             email: email.toLowerCase(),
             subscribedAt: new Date()
         });
+
+        // Send Welcome Email
+        sendNewsletterWelcomeEmail(email.toLowerCase());
 
         res.status(201).json({
             success: true,

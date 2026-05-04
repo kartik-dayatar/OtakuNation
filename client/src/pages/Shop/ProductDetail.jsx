@@ -10,7 +10,7 @@ import './ProductDetail.css';
 export default function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { getProductById, products, fetchProducts, fetchCategories, categories, loading } = useProductStore();
+    const { fetchProductById, getProductById, products, fetchProducts, fetchCategories, categories, loading } = useProductStore();
     const product = getProductById(id);
     const addItem = useCartStore((s) => s.addItem);
     const toggleWishlist = useWishlistStore((s) => s.toggleItem);
@@ -19,16 +19,18 @@ export default function ProductDetail() {
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState(0);
     const [quantity, setQuantity] = useState(1);
-    
+
     // Find the category object to check settings
     const currentCategory = categories.find(c => c.slug === product?.category || c._id === product?.category);
     const sizeLabel = currentCategory?.hasSizeOption ? 'Select Size' : 'Select Option';
 
-    // Ensure we fetch products and categories if the user navigated directly to the URL
+    // Ensure we fetch product details, categories if the user navigated directly to the URL
     useEffect(() => {
-        fetchProducts();
+        if (id) {
+            fetchProductById(id);
+        }
         fetchCategories();
-    }, [fetchProducts, fetchCategories]);
+    }, [id, fetchProductById, fetchCategories]);
 
     if (loading && !product) {
         return <div className="product-details-container" style={{ padding: '40px', textAlign: 'center' }}>

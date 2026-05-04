@@ -52,6 +52,10 @@ const userSchema = new mongoose.Schema(
         // Loyalty points
         otakuPoints: { type: Number, default: 0 },
 
+        // Reset password
+        resetPasswordToken:   { type: String },
+        resetPasswordExpires: { type: Date },
+
         // SQL: addresses → embedded array
         addresses: [addressSchema],
 

@@ -134,6 +134,11 @@ const getProductById = async (req, res, next) => {
             throw new Error("Product not found");
         }
 
+        // Fetch actual reviews for this product
+        const reviewsData = await Review.find({ product: product._id, isApproved: true })
+            .populate("user", "firstName lastName")
+            .sort({ createdAt: -1 });
+
         // Helper to ensure path is correct for frontend
         const resolveImgPath = (url) => {
             if (!url) return null;
@@ -156,6 +161,13 @@ const getProductById = async (req, res, next) => {
             reviews: product.reviewCount,
             rating: product.ratingAvg,
             sizes: product.sizes?.map(s => s.sizeLabel) || [],
+            reviewsList: reviewsData.map(r => ({
+                user: r.user ? `${r.user.firstName} ${r.user.lastName}` : "Anonymous",
+                rating: r.rating,
+                title: r.title,
+                comment: r.body, // Map 'body' to 'comment' for frontend compatibility
+                date: new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+            }))
         };
 
         res.json(mappedProduct);

@@ -53,9 +53,31 @@ const useProductStore = create((set, get) => ({
         }
     },
 
-    // Get product by ID (legacy or obj id)
+    // Get product by ID from local state (fast)
     getProductById: (id) => {
         return get().products.find((p) => p.id == id || p.legacyId == id);
+    },
+
+    // Fetch product by ID from API (detailed, includes reviews)
+    fetchProductById: async (id) => {
+        set({ loading: true });
+        try {
+            const { data } = await axios.get(`http://localhost:5000/api/products/${id}`);
+            set((state) => {
+                const exists = state.products.find(p => p.id === id || p._id === id);
+                return {
+                    products: exists
+                        ? state.products.map(p => (p.id === id || p._id === id) ? data : p)
+                        : [...state.products, data],
+                    loading: false
+                };
+            });
+            return data;
+        } catch (err) {
+            console.error('Error fetching product detail:', err);
+            set({ loading: false });
+            return null;
+        }
     },
 
     // Get products by Category

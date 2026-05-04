@@ -20,6 +20,8 @@ const {
     getWishlist,
     toggleWishlist,
     deleteUser,
+    forgotPassword,
+    resetPassword,
 } = require("../controllers/userController");
 
 
@@ -29,6 +31,8 @@ const { protect, adminOnly } = require("../middleware/authMiddleware");
 router.post("/register",      register);
 router.post("/login",         login);
 router.post("/admin/login",   adminLogin);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 // ── Protected (any logged-in user) ───────────────────
 router.get("/profile",           protect, getProfile);
