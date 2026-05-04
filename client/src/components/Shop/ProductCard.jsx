@@ -1,7 +1,10 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Zap } from 'lucide-react';
+import useCartStore from '../../store/cartStore';
+import useWishlistStore from '../../store/wishlistStore';
+import useAuthStore from '../../store/authStore';
 import './ProductCard.css';
 
 const gradients = [
@@ -22,6 +25,50 @@ const gradients = [
 const getGradient = (id) => gradients[(id || 0) % gradients.length];
 
 const ProductCard = ({ product }) => {
+    const navigate = useNavigate();
+    const { user } = useAuthStore();
+    const cartStore = useCartStore();
+    const wishlistStore = useWishlistStore();
+    
+    const [isAdded, setIsAdded] = useState(false);
+
+    const isWishlisted = useWishlistStore(s => 
+        s.items.some(i => i._id === product._id || i.product === product._id));
+
+    const handleWishlist = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        if (isWishlisted) {
+            wishlistStore.removeFromWishlist(product._id);
+        } else {
+            wishlistStore.addToWishlist(product._id);
+        }
+    };
+
+    const handleAddToCart = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        
+        cartStore.addItem({
+            id: product._id,
+            name: product.name,
+            price: product.price,
+            image: product.image || product.images?.[0]?.url,
+            quantity: 1
+        });
+
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 1000);
+    };
+
     return (
         <Link to={`/product/${product._id || product.id}`} className="product-card-enhanced">
             <div className="product-image-container">
@@ -36,10 +83,18 @@ const ProductCard = ({ product }) => {
 
                 {/* Floating Actions - Top Right Overlay */}
                 <div className="product-card-actions">
-                    <button className="action-btn" onClick={(e) => { e.preventDefault(); /* Add to wishlist */ }}>
-                        <Heart size={18} />
+                    <button 
+                        className={`action-btn ${isWishlisted ? 'active' : ''}`} 
+                        onClick={handleWishlist}
+                        style={{ color: isWishlisted ? '#ef4444' : 'inherit' }}
+                    >
+                        <Heart size={18} fill={isWishlisted ? '#ef4444' : 'none'} />
                     </button>
-                    <button className="action-btn" onClick={(e) => { e.preventDefault(); /* Add to cart */ }}>
+                    <button 
+                        className={`action-btn ${isAdded ? 'success' : ''}`} 
+                        onClick={handleAddToCart}
+                        style={{ color: isAdded ? '#10b981' : 'inherit' }}
+                    >
                         <ShoppingCart size={18} />
                     </button>
                 </div>

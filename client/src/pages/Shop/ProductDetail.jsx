@@ -4,6 +4,7 @@ import { FaHeart, FaRegHeart, FaShoppingCart, FaShieldAlt, FaUndo, FaLock, FaBol
 import useCartStore from '../../store/cartStore';
 import useProductStore from '../../store/productStore';
 import useWishlistStore from '../../store/wishlistStore';
+import axios from 'axios';
 import { useToast } from '../../components/ui/Toast';
 import './ProductDetail.css';
 
@@ -19,7 +20,8 @@ export default function ProductDetail() {
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState(0);
     const [quantity, setQuantity] = useState(1);
-
+    const [reviewsData, setReviewsData] = useState({ reviews: [], count: 0, avgRating: 0 });
+    const [reviewsLoading, setReviewsLoading] = useState(false);
     // Find the category object to check settings
     const currentCategory = categories.find(c => c.slug === product?.category || c._id === product?.category);
     const sizeLabel = currentCategory?.hasSizeOption ? 'Select Size' : 'Select Option';
@@ -31,6 +33,22 @@ export default function ProductDetail() {
         }
         fetchCategories();
     }, [id, fetchProductById, fetchCategories]);
+
+    useEffect(() => {
+        if (!id) return;
+        const fetchReviews = async () => {
+            setReviewsLoading(true);
+            try {
+                const { data } = await axios.get(`http://localhost:5000/api/reviews/product/${id}`);
+                setReviewsData(data);
+            } catch (err) {
+                console.error("Failed to fetch reviews:", err);
+            } finally {
+                setReviewsLoading(false);
+            }
+        };
+        fetchReviews();
+    }, [id]);
 
     if (loading && !product) {
         return <div className="product-details-container" style={{ padding: '40px', textAlign: 'center' }}>
@@ -65,20 +83,22 @@ export default function ProductDetail() {
         <main className="product-details-container">
             {/* Breadcrumbs */}
             <nav className="breadcrumbs">
-                <Link to="/home">Home</Link> &gt;
-                <Link to="/products">Shop</Link> &gt;
-                <span>{product.name}</span>
+                <Link to="/home">Home</Link> <span className="bc-sep">›</span>
+                <Link to="/products">Shop</Link> <span className="bc-sep">›</span>
+                <span className="current-page">{product.name}</span>
             </nav>
 
             {/* Product Layout */}
             <div className="product-layout">
                 {/* Left: Gallery */}
                 <div className="product-gallery">
-                    <div className="main-image">
-                        <img
-                            src={(product.images && product.images[selectedImage]) ? product.images[selectedImage] : (product.image || "/assets/placeholder.png")}
-                            alt={product.name}
-                        />
+                    <div className="main-image-container">
+                        <div className="main-image">
+                            <img
+                                src={(product.images && product.images[selectedImage]) ? product.images[selectedImage] : (product.image || "/assets/placeholder.png")}
+                                alt={product.name}
+                            />
+                        </div>
                     </div>
                     {/* Thumbnails */}
                     <div className="thumbnail-list">
@@ -95,25 +115,31 @@ export default function ProductDetail() {
                 </div>
 
                 {/* Right: Info */}
-                <div className="product-info">
-                    <div className="product-meta">
-                        <span className="category-tag">{product.category}</span>
-                        <span className="separator">•</span>
-                        <div className="rating">
-                            ★★★★★ ({product.reviews} reviews)
+                <div className="product-info-panel">
+                    <div className="product-header">
+                        <span className="category-badge">{product.category}</span>
+                        <h1>{product.name}</h1>
+                        <div className="rating-row">
+                            <div className="rating-stars">
+                                {[...Array(5)].map((_, i) => (
+                                    <span key={i} className={i < Math.round(product.ratingAvg || 0) ? 'star filled' : 'star'}>★</span>
+                                ))}
+                            </div>
+                            <span className="review-link">({product.reviewCount || 0} reviews)</span>
                         </div>
                     </div>
 
-                    <h1>{product.name}</h1>
-                    <div className="price">₹{product.price.toLocaleString()}</div>
+                    <div className="price-tag">₹{product.price.toLocaleString()}</div>
 
-                    <p className="description">
-                        {product.description}
-                    </p>
+                    <div className="product-description-container">
+                        <p className="description">
+                            {product.description}
+                        </p>
+                    </div>
 
                     {/* Variant Selector */}
-                    {product.sizes && (
-                        <div className="variant-selector">
+                    {product.sizes && product.sizes.length > 0 && (
+                        <div className="variant-section">
                             <span className="variant-label">{sizeLabel}</span>
                             <div className="size-options">
                                 {product.sizes.map((size, i) => (
@@ -131,38 +157,36 @@ export default function ProductDetail() {
                     )}
 
                     {/* Stock Status */}
-                    <div className="stock-status">
-                        <span className="stock-dot"></span> In Stock and ready to ship
+                    <div className="availability">
+                        <span className="stock-dot"></span> 
+                        <span className="stock-text">In Stock and ready to ship</span>
                     </div>
 
                     {/* Actions */}
-                    <form onSubmit={handleAdd} className="pro-actions">
-                        <div className="qty-input-group">
-                            <button type="button" className="qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
-                            <span className="qty-value">{quantity}</span>
-                            <button type="button" className="qty-btn" onClick={() => setQuantity(quantity + 1)}>+</button>
+                    <div className="purchase-actions">
+                        <div className="qty-picker">
+                            <button type="button" className="qty-op" onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
+                            <span className="qty-num">{quantity}</span>
+                            <button type="button" className="qty-op" onClick={() => setQuantity(quantity + 1)}>+</button>
                         </div>
-                        <button type="submit" className="btn secondary add-to-cart-btn">
-                            <FaShoppingCart style={{ marginRight: '8px' }} />
-                            Add to Cart
-                        </button>
-                        <button
-                            type="button"
-                            className="btn primary buy-now-btn"
-                            onClick={handleBuyNow}
-                        >
-                            <FaBolt style={{ marginRight: '8px' }} />
-                            Buy Now
-                        </button>
-                        <button
-                            type="button"
-                            className={`btn ghost icon-btn wishlist-toggle-btn ${isWishlisted ? 'wishlisted' : ''}`}
-                            onClick={() => toggleWishlist(product)}
-                            aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                        >
-                            {isWishlisted ? <FaHeart /> : <FaRegHeart />}
-                        </button>
-                    </form>
+                        
+                        <div className="cta-buttons">
+                            <button onClick={handleBuyNow} type="button" className="btn-buy-now">
+                                Buy Now
+                            </button>
+                            <button onClick={handleAdd} type="button" className="btn-add-to-cart">
+                                Add to Cart
+                            </button>
+                            <button
+                                type="button"
+                                className={`wishlist-heart ${isWishlisted ? 'is-active' : ''}`}
+                                onClick={() => toggleWishlist(product)}
+                                aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                            >
+                                {isWishlisted ? <FaHeart /> : <FaRegHeart />}
+                            </button>
+                        </div>
+                    </div>
 
                     {/* Trust Badges */}
                     <div className="trust-badges">
@@ -206,31 +230,55 @@ export default function ProductDetail() {
                 <div className="reviews-header">
                     <h2>Customer Reviews</h2>
                     <div className="overall-rating">
-                        <span className="big-star">★</span>
-                        <span className="rating-num">{product.rating}</span>
-                        <span className="review-count">({product.reviews} ratings)</span>
+                        <div className="rating-summary">
+                            <span className="rating-num">{product.ratingAvg?.toFixed(1) || '0.0'}</span>
+                            <div className="summary-stars">
+                                {[...Array(5)].map((_, i) => (
+                                    <span key={i} className={i < Math.round(product.ratingAvg || 0) ? 'star filled' : 'star'}>★</span>
+                                ))}
+                            </div>
+                            <span className="review-count">Based on {product.reviewCount || 0} reviews</span>
+                        </div>
                     </div>
                 </div>
 
                 <div className="reviews-list">
-                    {product.reviewsList ? (
-                        product.reviewsList.map((review, idx) => (
+                    {reviewsLoading ? (
+                        <div className="reviews-loading">Loading reviews...</div>
+                    ) : reviewsData.reviews.length > 0 ? (
+                        reviewsData.reviews.map((review, idx) => (
                             <div className="review-card" key={idx}>
                                 <div className="review-top">
-                                    <div className="review-user-avatar">{review.user.charAt(0)}</div>
-                                    <div className="review-meta">
-                                        <div className="review-user">{review.user}</div>
-                                        <div className="review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
+                                    <div className="review-user-avatar">
+                                        {(review.user?.firstName?.[0] || 'U').toUpperCase()}
                                     </div>
-                                    <div className="review-date">{review.date}</div>
+                                    <div className="review-meta">
+                                        <div className="review-user">
+                                            {review.user?.firstName} {review.user?.lastName?.[0]}.
+                                            {review.verifiedPurchase && <span className="verified-badge">✓ Verified Purchase</span>}
+                                        </div>
+                                        <div className="review-stars">
+                                            {[...Array(5)].map((_, i) => (
+                                                <span key={i} className={i < review.rating ? 'star filled' : 'star'}>★</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="review-date">
+                                        {new Date(review.createdAt).toLocaleDateString('en-US', { 
+                                            month: 'short', 
+                                            day: 'numeric', 
+                                            year: 'numeric' 
+                                        })}
+                                    </div>
                                 </div>
-                                <p className="review-comment">{review.comment}</p>
+                                {review.title && <h4 className="review-title">{review.title}</h4>}
+                                <p className="review-comment">{review.body}</p>
                             </div>
                         ))
                     ) : (
                         <div className="review-card empty-reviews">
-                            <p>Be the first to leave a review for <strong>{product.name}</strong>!</p>
-                            <Link to={`/add-review/${product.id}`} className="btn primary" style={{ marginTop: '12px', display: 'inline-flex' }}>Write a Review</Link>
+                            <p>No reviews yet. Be the first to review!</p>
+                            <p className="empty-sub">Purchased this item? You can leave a review from your order tracking page.</p>
                         </div>
                     )}
                 </div>

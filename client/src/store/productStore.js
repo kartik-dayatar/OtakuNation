@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const useProductStore = create((set, get) => ({
     products: [],
     categories: [],
@@ -25,7 +27,7 @@ const useProductStore = create((set, get) => ({
             if (params.search) queryParams.append('search', params.search);
             if (params.adminView) queryParams.append('adminView', params.adminView);
 
-            const { data } = await axios.get(`http://localhost:5000/api/products?${queryParams.toString()}`);
+            const { data } = await axios.get(`${API_URL}/products?${queryParams.toString()}`);
             set({ products: data.products, loading: false });
         } catch (err) {
             console.error('Error fetching products:', err);
@@ -36,7 +38,7 @@ const useProductStore = create((set, get) => ({
     fetchCategories: async () => {
         set({ loadingCategories: true });
         try {
-            const { data } = await axios.get('http://localhost:5000/api/categories');
+            const { data } = await axios.get(`${API_URL}/categories`);
             set({ categories: data, loadingCategories: false });
         } catch (err) {
             console.error('Error fetching categories:', err);
@@ -46,7 +48,7 @@ const useProductStore = create((set, get) => ({
 
     fetchAnimeSeries: async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/series');
+            const { data } = await axios.get(`${API_URL}/series`);
             set({ animeSeries: data });
         } catch (err) {
             console.error('Error fetching anime series:', err);
@@ -100,7 +102,7 @@ const useProductStore = create((set, get) => ({
     addProduct: async (productData) => {
         try {
             const isFormData = productData instanceof FormData;
-            const { data } = await axios.post('http://localhost:5000/api/products', productData, {
+            const { data } = await axios.post(`${API_URL}/products`, productData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('on_token')}`,
                     'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
@@ -119,7 +121,7 @@ const useProductStore = create((set, get) => ({
     updateProduct: async (id, productData) => {
         try {
             const isFormData = productData instanceof FormData;
-            const { data } = await axios.put(`http://localhost:5000/api/products/${id}`, productData, {
+            const { data } = await axios.put(`${API_URL}/products/${id}`, productData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('on_token')}`,
                     'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
@@ -139,7 +141,7 @@ const useProductStore = create((set, get) => ({
     // Admin: Delete Product calls API
     deleteProduct: async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/products/${id}`, {
+            await axios.delete(`${API_URL}/products/${id}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('on_token')}` }
             });
             set((state) => ({
@@ -153,7 +155,7 @@ const useProductStore = create((set, get) => ({
     // User: Add Review
     addReview: async (productId, review) => {
         try {
-            await axios.post(`http://localhost:5000/api/products/${productId}/reviews`, review, {
+            await axios.post(`${API_URL}/products/${productId}/reviews`, review, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('on_token')}` }
             });
             // refetch to get updated rating logic

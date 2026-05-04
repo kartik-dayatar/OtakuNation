@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { FaStar, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import useProductStore from '../../store/productStore';
-import useAuthStore from '../../store/authStore';
 import './AddReview.css';
 
 export default function AddReview() {
@@ -10,11 +9,10 @@ export default function AddReview() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get('orderId');
-
+    
     const product = useProductStore((state) => state.getProductById(productId));
     const addReview = useProductStore((state) => state.addReview);
-    const user = useAuthStore((state) => state.user);
-
+    
     const [rating, setRating] = useState(5);
     const [hover, setHover] = useState(null);
     const [comment, setComment] = useState('');
@@ -31,16 +29,17 @@ export default function AddReview() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+        
         const review = {
+            user: 'Kartik', // In a real app, this would be the logged-in user
             rating: rating,
-            title: `Review for ${product.name}`,
-            body: comment
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            comment: comment
         };
-
+        
         addReview(productId, review);
         setSubmitted(true);
-
+        
         // Redirect after 2 seconds
         setTimeout(() => {
             if (orderId) {
@@ -89,15 +88,15 @@ export default function AddReview() {
                                 const ratingValue = i + 1;
                                 return (
                                     <label key={i}>
-                                        <input
-                                            type="radio"
-                                            name="rating"
-                                            value={ratingValue}
+                                        <input 
+                                            type="radio" 
+                                            name="rating" 
+                                            value={ratingValue} 
                                             onClick={() => setRating(ratingValue)}
                                         />
-                                        <FaStar
-                                            className="star"
-                                            color={ratingValue <= (hover || rating) ? "#ffc107" : "#e4e5e9"}
+                                        <FaStar 
+                                            className="star" 
+                                            color={ratingValue <= (hover || rating) ? "#ffc107" : "#e4e5e9"} 
                                             size={40}
                                             onMouseEnter={() => setHover(ratingValue)}
                                             onMouseLeave={() => setHover(null)}
@@ -117,9 +116,9 @@ export default function AddReview() {
 
                     <div className="form-group">
                         <label htmlFor="comment">Write your review</label>
-                        <textarea
-                            id="comment"
-                            className="review-textarea"
+                        <textarea 
+                            id="comment" 
+                            className="review-textarea" 
                             placeholder="What did you like or dislike? How was the quality? (Optional)"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}

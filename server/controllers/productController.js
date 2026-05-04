@@ -2,6 +2,8 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const AnimeSeries = require("../models/AnimeSeries");
 const Review = require("../models/Review");
+const User = require("../models/User");
+const emailService = require("../utils/emailService");
 
 // ────────────────────────────────────────────────────
 // GET /api/products
@@ -280,8 +282,21 @@ const updateProduct = async (req, res, next) => {
         if (updates.inStock === 'true') updates.inStock = true;
         if (updates.inStock === 'false') updates.inStock = false;
 
+        const oldStock = product.stockQuantity;
         Object.assign(product, updates);
         const updated = await product.save();
+
+        // Check if product was out of stock and now is in stock
+        if (oldStock === 0 && updated.stockQuantity > 0) {
+            // Find users who have this product in their wishlist
+            const usersWithInWishlist = await User.find({ wishlist: updated._id });
+            if (usersWithInWishlist.length > 0) {
+                usersWithInWishlist.forEach(user => {
+                    emailService.sendWishlistBackInStock(user, updated).catch(console.error);
+                });
+            }
+        }
+
         res.json(updated);
     } catch (err) {
         next(err);
@@ -344,4 +359,119 @@ const addReview = async (req, res, next) => {
     }
 };
 
-module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct, addReview };
+// ────────────────────────────────────────────────────
+// GET /api/products/search
+// Query param: q
+// ────────────────────────────────────────────────────
+const searchProducts = async (req, res, next) => {
+    try {
+        const { q } = req.query;
+
+        if (!q || q.trim() === '') {
+            return res.status(200).json([]);
+        }
+
+        const query = q.trim();
+
+        // 1. Find matching categories/series to search by their IDs too
+        const matchingCategories = await Category.find({ name: { $regex: query, $options: "i" } }).select('_id');
+        const matchingSeries = await AnimeSeries.find({ name: { $regex: query, $options: "i" } }).select('_id');
+
+        // 2. Build filter
+        const filter = {
+            status: 'active',
+            $or: [
+                { name: { $regex: query, $options: "i" } },
+                { description: { $regex: query, $options: "i" } },
+                { category: { $in: matchingCategories.map(c => c._id) } },
+                { animeSeries: { $in: matchingSeries.map(s => s._id) } }
+            ]
+        };
+
+        // 3. Fetch products
+        const productsRaw = await Product.find(filter)
+            .populate("category", "name slug")
+            .populate("animeSeries", "name slug")
+            .limit(20);
+
+        // 4. Resolve image paths
+        const resolveImgPath = (url) => {
+            if (!url) return null;
+            if (url.startsWith('http') || url.startsWith('/src') || url.startsWith('/assets') || url.startsWith('data:')) return url;
+            return `http://localhost:5000/uploads/products/${url}`;
+        };
+
+        const products = productsRaw.map(p => {
+            const primaryImg = p.images?.find(img => img.isPrimary) || p.images?.[0];
+            return {
+                ...p.toObject(),
+                id: p._id,
+                image: resolveImgPath(primaryImg?.url || p.image),
+                images: p.images?.map(img => resolveImgPath(img.url)) || []
+            };
+        });
+
+        res.status(200).json(products);
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// PUT /api/products/reviews/:reviewId/approve   (admin)
+// ────────────────────────────────────────────────────
+const approveReview = async (req, res, next) => {
+    try {
+        const review = await Review.findById(req.params.reviewId)
+            .populate("user", "firstName lastName email")
+            .populate("product", "name");
+
+        if (!review) {
+            res.status(404);
+            throw new Error("Review not found");
+        }
+
+        review.isApproved = true;
+        await review.save();
+
+        // Send email to user
+        emailService.sendReviewApproved(review.user, {
+            productName: review.product.name,
+            reviewTitle: review.title
+        }).catch(console.error);
+
+        res.json({ message: "Review approved", review });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// DELETE /api/products/reviews/:reviewId   (admin)
+// ────────────────────────────────────────────────────
+const rejectReview = async (req, res, next) => {
+    try {
+        const review = await Review.findById(req.params.reviewId);
+        if (!review) {
+            res.status(404);
+            throw new Error("Review not found");
+        }
+
+        await review.deleteOne();
+        res.json({ message: "Review rejected/deleted" });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { 
+    getProducts, 
+    getProductById, 
+    createProduct, 
+    updateProduct, 
+    deleteProduct, 
+    addReview, 
+    approveReview,
+    rejectReview,
+    searchProducts 
+};

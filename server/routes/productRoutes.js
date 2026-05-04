@@ -8,14 +8,18 @@ const {
     updateProduct,
     deleteProduct,
     addReview,
+    approveReview,
+    rejectReview,
+    searchProducts,
 } = require("../controllers/productController");
 
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 const upload = require("../middleware/uploadMiddleware");
 
 // ── Public ────────────────────────────────────────────
-router.get("/",    getProducts);
-router.get("/:id", getProductById);
+router.get("/",       getProducts);
+router.get("/search", searchProducts);
+router.get("/:id",    getProductById);
 
 // ── Protected user ────────────────────────────────────
 router.post("/:id/reviews", protect, addReview);
@@ -24,5 +28,9 @@ router.post("/:id/reviews", protect, addReview);
 router.post("/",       protect, adminOnly, upload.single("image"), createProduct);
 router.put("/:id",     protect, adminOnly, upload.single("image"), updateProduct);
 router.delete("/:id",  protect, adminOnly, deleteProduct);
+
+// Review moderation
+router.put("/reviews/:reviewId/approve", protect, adminOnly, approveReview);
+router.delete("/reviews/:reviewId", protect, adminOnly, rejectReview);
 
 module.exports = router;

@@ -17,13 +17,18 @@ const reviewSchema = new mongoose.Schema(
             ref:      "User",
             required: true,
         },
+        order: {
+            type:     mongoose.Schema.Types.ObjectId,
+            ref:      "Order",
+            required: true,
+        },
 
         rating:  { type: Number, required: true, min: 1, max: 5 },
-        title:   { type: String, default: "",   trim: true },
-        body:    { type: String, required: true, trim: true },
+        title:   { type: String, default: "",   trim: true, maxlength: 100 },
+        body:    { type: String, required: true, trim: true, maxlength: 1000 },
 
         // Only true when the user has an Order containing this product
-        isVerifiedPurchase: { type: Boolean, default: false },
+        verifiedPurchase: { type: Boolean, default: true },
 
         // Admin moderation flag
         isApproved: { type: Boolean, default: true },
@@ -31,8 +36,8 @@ const reviewSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// ── One review per user per product ─────────────────────
-reviewSchema.index({ product: 1, user: 1 }, { unique: true });
+// ── One review per user per product per order ───────────
+reviewSchema.index({ user: 1, product: 1, order: 1 }, { unique: true });
 reviewSchema.index({ product: 1 });
 
 // ── Update Product stats after a review is saved ─────────
