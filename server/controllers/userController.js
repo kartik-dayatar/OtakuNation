@@ -497,6 +497,7 @@ const addToCart = async (req, res, next) => {
             .populate("cart.product", "name price comparePrice images stockQuantity sizes status badgeLabel ratingAvg reviewCount slug");
         res.json(updated.cart);
     } catch (err) {
+        console.error("[addToCart] ERROR:", err.message, "| user:", req.user?._id, "| body:", req.body);
         next(err);
     }
 };
@@ -580,22 +581,31 @@ const syncCart = async (req, res, next) => {
 
         // Merge: for each incoming item, add or increment in DB cart
         for (const incoming of items) {
+            const product = await require("../models/Product").findById(incoming.productId);
+            if (!product) continue;
+
             const existingIdx = (user.cart || []).findIndex(
                 (item) =>
                     item && item.product &&
                     item.product.toString() === incoming.productId &&
                     item.sizeLabel === (incoming.sizeLabel || null)
             );
+
+            const incomingQty = Number(incoming.quantity) || 1;
+            
             if (existingIdx > -1) {
-                user.cart[existingIdx].quantity = Math.max(
-                    user.cart[existingIdx].quantity,
-                    incoming.quantity
+                // Sum quantities and cap at stock
+                const currentQty = user.cart[existingIdx].quantity;
+                user.cart[existingIdx].quantity = Math.min(
+                    currentQty + incomingQty,
+                    product.stockQuantity || 99
                 );
             } else {
+                // New item: cap at stock
                 user.cart.push({
                     product:   incoming.productId,
                     sizeLabel: incoming.sizeLabel || null,
-                    quantity:  incoming.quantity || 1,
+                    quantity:  Math.min(incomingQty, product.stockQuantity || 99),
                 });
             }
         }

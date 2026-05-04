@@ -26,7 +26,7 @@ const getGradient = (id) => gradients[(id || 0) % gradients.length];
 
 const ProductCard = ({ product }) => {
     const navigate = useNavigate();
-    const { user } = useAuthStore();
+    const { user, token } = useAuthStore();
     const cartStore = useCartStore();
     const wishlistStore = useWishlistStore();
     
@@ -42,11 +42,7 @@ const ProductCard = ({ product }) => {
             navigate('/login');
             return;
         }
-        if (isWishlisted) {
-            wishlistStore.removeFromWishlist(product._id);
-        } else {
-            wishlistStore.addToWishlist(product._id);
-        }
+        wishlistStore.toggleItem(product, token);
     };
 
     const handleAddToCart = (e) => {
@@ -63,7 +59,7 @@ const ProductCard = ({ product }) => {
             price: product.price,
             image: product.image || product.images?.[0]?.url,
             quantity: 1
-        });
+        }, null, token);
 
         setIsAdded(true);
         setTimeout(() => setIsAdded(false), 1000);

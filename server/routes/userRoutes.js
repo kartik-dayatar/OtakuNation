@@ -48,21 +48,26 @@ router.put("/addresses/:addrId", protect, updateAddress);
 router.delete("/addresses/:addrId", protect, deleteAddress);
 router.patch("/addresses/:addrId/default", protect, setDefaultAddress);
 
-// ── Admin only ────────────────────────────────────────
-router.get("/",     protect, adminOnly, getAllUsers);
-router.get("/:id",  protect, adminOnly, getCustomerById);
-router.delete("/:id", protect, adminOnly, deleteUser);
-
 // ── Cart (requires login) ─────────────────────────────
+// MUST be above /:id wildcard route or Express will match
+// "cart", "wishlist" etc. as the :id param (admin route).
 router.get("/cart",            protect, getCart);
+router.post("/cart/sync",      protect, syncCart);
 router.post("/cart",           protect, addToCart);
-router.post("/cart/sync",      protect, syncCart);          // login-time merge
 router.put("/cart/:itemId",    protect, updateCartItem);
 router.delete("/cart/:itemId", protect, removeFromCart);
 router.delete("/cart",         protect, clearCart);
 
 // ── Wishlist (requires login) ─────────────────────────
+// Also must be above /:id wildcard.
 router.get("/wishlist",           protect, getWishlist);
 router.post("/wishlist/toggle",   protect, toggleWishlist);
+
+// ── Admin only ────────────────────────────────────────
+// /:id wildcard MUST come last — it matches any path segment
+// and would swallow /cart, /wishlist, /profile etc. if placed first.
+router.get("/",     protect, adminOnly, getAllUsers);
+router.get("/:id",  protect, adminOnly, getCustomerById);
+router.delete("/:id", protect, adminOnly, deleteUser);
 
 module.exports = router;

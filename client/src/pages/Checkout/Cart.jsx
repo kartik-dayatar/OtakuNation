@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaTrash, FaLock, FaArrowLeft } from 'react-icons/fa';
 import useCartStore from '../../store/cartStore';
+import useAuthStore from '../../store/authStore';
 import './Cart.css';
 
 const SHIPPING_THRESHOLD = 5000;
@@ -13,6 +14,7 @@ export default function Cart() {
     const items = useCartStore((s) => s.items);
     const removeItem = useCartStore((s) => s.removeItem);
     const updateQuantity = useCartStore((s) => s.updateQuantity);
+    const { token } = useAuthStore();
 
     const formatCurrency = (num) => '₹' + num.toLocaleString('en-IN');
 
@@ -77,20 +79,20 @@ export default function Cart() {
                                 <div className="cart-qty">
                                     <button
                                         className="cart-qty-btn"
-                                        onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1)}
+                                        onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1, token, item._cartItemId)}
                                         aria-label="Decrease quantity"
                                     >−</button>
                                     <span className="qty-value">{item.quantity}</span>
                                     <button
                                         className="cart-qty-btn"
-                                        onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1)}
+                                        onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1, token, item._cartItemId)}
                                         aria-label="Increase quantity"
                                     >+</button>
                                 </div>
 
                                 <button
                                     className="cart-remove"
-                                    onClick={() => removeItem(item.id, item.selectedSize)}
+                                    onClick={() => removeItem(item.id, item.selectedSize, token, item._cartItemId)}
                                     aria-label="Remove item"
                                 >
                                     <FaTrash />

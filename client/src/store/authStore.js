@@ -45,11 +45,14 @@ const useAuthStore = create((set, get) => ({
         set({ loading: true, error: null });
         try {
             const { data } = await axios.post(`${API_URL}/login`, { email, password });
+            // Detect if user was browsing as a guest (no prior token).
+            // isGuest=true → merge any guest cart items into backend.
+            // isGuest=false → just fetch fresh from backend (prevents qty doubling).
+            const wasGuest = !localStorage.getItem('on_token');
             localStorage.setItem('on_token', data.token);
             localStorage.setItem('on_user',  JSON.stringify(data.user));
             set({ token: data.token, user: data.user, loading: false });
-            // Sync local guest cart to backend, then fetch wishlist
-            await useCartStore.getState().syncToBackend(data.token);
+            await useCartStore.getState().syncToBackend(data.token, data.user, wasGuest);
             await useWishlistStore.getState().fetchWishlist(data.token);
             return { success: true, user: data.user };
         } catch (err) {
@@ -80,9 +83,15 @@ const useAuthStore = create((set, get) => ({
     logout: () => {
         localStorage.removeItem('on_token');
         localStorage.removeItem('on_user');
+        localStorage.removeItem('on_wishlist');
         set({ token: null, user: null, error: null });
-        // Clear local cart and wishlist memory on logout
-        useCartStore.getState().clearCart(null);
+        // Clear in-memory cart (items: []) so the logged-out UI is empty.
+        // localStorage cart (on_cart) is intentionally preserved as a
+        // guest cart for the same user if they log back in. A different
+        // user's stale cart is handled by the user-isolation check in
+        // cartStore.syncToBackend() at their next login.
+        useCartStore.getState().resetCartState();
+        // Clear wishlist from memory and localStorage.
         useWishlistStore.getState().clearWishlist();
     },
 

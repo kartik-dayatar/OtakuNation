@@ -290,8 +290,8 @@ const seedDatabase = async () => {
                 isFeatured:       true,
                 isNewArrival:     true,
                 badgeLabel:       "New",
-                ratingAvg:        4.8,
-                reviewCount:      128,
+                ratingAvg:        0,
+                reviewCount:      0,
                 images: [
                     { url: "Haori.jpg",            altText: "Demon Slayer Haori front",    isPrimary: true,  displayOrder: 1 },
                     { url: "demon-slayer_hori.jpg", altText: "Haori pattern detail",       isPrimary: false, displayOrder: 2 },
@@ -324,8 +324,8 @@ const seedDatabase = async () => {
                 isFeatured:       true,
                 isNewArrival:     false,
                 badgeLabel:       "Premium",
-                ratingAvg:        4.9,
-                reviewCount:      64,
+                ratingAvg:        0,
+                reviewCount:      0,
                 images: [
                     { url: "gojo-figure.jpg", altText: "Gojo Satoru Figure front",       isPrimary: true,  displayOrder: 1 },
                     { url: "gojo-poster.jpg", altText: "Gojo Figure side detail",        isPrimary: false, displayOrder: 2 },
@@ -352,8 +352,8 @@ const seedDatabase = async () => {
                 isFeatured:       false,
                 isBestSeller:     true,
                 badgeLabel:       "Best Seller",
-                ratingAvg:        4.6,
-                reviewCount:      210,
+                ratingAvg:        0,
+                reviewCount:      0,
                 images: [
                     { url: "luffy-hat.jpg", altText: "Luffy Straw Hat top view", isPrimary: true, displayOrder: 1 },
                 ],

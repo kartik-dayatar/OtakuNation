@@ -4,22 +4,28 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5000/api/users';
 
 /**
- * Wishlist Store — Hybrid local-first + backend sync.
+ * Wishlist Store — Backend-first persistence.
  *
- * GUESTS   → wishlist items live only in Zustand memory.
- * LOGGED IN → items are synced to/from MongoDB via the /wishlist endpoints.
+ * GUESTS    → items live only in Zustand memory (no localStorage, no DB).
+ * LOGGED IN → items are always read from and written to MongoDB.
+ *             The backend is the single source of truth; we never cache
+ *             the wishlist in localStorage to prevent cross-user leakage.
  *
- * `token` must be passed in from useAuthStore.getState().token by the caller
+ * On every page load with an existing token, fetchWishlist() is called
+ * at the bottom of this file to restore the user's wishlist from DB.
+ *
+ * `token` must be passed in by the caller (from useAuthStore.getState().token)
  * to avoid circular imports.
  */
 const useWishlistStore = create((set, get) => ({
-    items:   [],  // array of populated product objects
+    items:   [],   // array of populated product objects
     loading: false,
 
     _authHeader: (token) => ({ Authorization: `Bearer ${token}` }),
 
     // ─────────────────────────────────────────────────
-    // Fetch wishlist from backend (called after login)
+    // Fetch wishlist from backend.
+    // Called on page load (if token exists) and after login.
     // ─────────────────────────────────────────────────
     fetchWishlist: async (token) => {
         if (!token) return;
@@ -54,7 +60,7 @@ const useWishlistStore = create((set, get) => ({
                 return null;
             }
         } else {
-            // Guest — local only
+            // Guest — local memory only (not persisted anywhere)
             const items = get().items;
             const exists = items.find((p) => p.id === product.id || p._id === product._id);
             if (exists) {
@@ -68,7 +74,7 @@ const useWishlistStore = create((set, get) => ({
     },
 
     // ─────────────────────────────────────────────────
-    // isWishlisted — works for both local product objects and DB refs
+    // isWishlisted — works for both local objects and DB refs
     // ─────────────────────────────────────────────────
     isWishlisted: (id) => {
         return get().items.some(
@@ -89,10 +95,23 @@ const useWishlistStore = create((set, get) => ({
         }
     },
 
-    // Clear on logout
+    // ─────────────────────────────────────────────────
+    // Clear wishlist from memory on logout.
+    // The DB copy is preserved — fetchWishlist() restores
+    // it on the next login.
+    // ─────────────────────────────────────────────────
     clearWishlist: () => set({ items: [] }),
 
     getCount: () => get().items.length,
 }));
+
+// On app load: if a valid token exists, fetch the wishlist fresh
+// from the backend. This restores the wishlist after a page refresh
+// for already-logged-in users. The backend is the source of truth;
+// we never persist the wishlist to localStorage.
+const initialToken = localStorage.getItem('on_token');
+if (initialToken) {
+    useWishlistStore.getState().fetchWishlist(initialToken);
+}
 
 export default useWishlistStore;

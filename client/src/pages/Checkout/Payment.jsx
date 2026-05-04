@@ -81,13 +81,12 @@ export default function Payment() {
                     promoDiscount,
                     totalAmount: total + 50,
                 };
-
                 const token = localStorage.getItem('on_token');
                 const { data } = await axios.post(`${API_URL}/orders`, orderPayload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                clearCart();
+                clearCart(token);
                 navigate('/order-success', { state: { orderId: data.orderNumber } });
             } catch (err) {
                 setError(err.response?.data?.message || 'Failed to place order.');
@@ -147,8 +146,9 @@ export default function Payment() {
                                 headers: { Authorization: `Bearer ${verifyToken}` }
                             });
 
-                            clearCart();
+                            clearCart(verifyToken);
                             navigate(`/account/orders/${verifyRes.data.orderId}`);
+
                         } catch (err) {
                             setError('Payment verification failed.');
                         }

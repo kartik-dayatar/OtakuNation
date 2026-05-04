@@ -4,6 +4,7 @@ import { FaHeart, FaRegHeart, FaShoppingCart, FaShieldAlt, FaUndo, FaLock, FaBol
 import useCartStore from '../../store/cartStore';
 import useProductStore from '../../store/productStore';
 import useWishlistStore from '../../store/wishlistStore';
+import useAuthStore from '../../store/authStore';
 import axios from 'axios';
 import { useToast } from '../../components/ui/Toast';
 import './ProductDetail.css';
@@ -16,6 +17,7 @@ export default function ProductDetail() {
     const addItem = useCartStore((s) => s.addItem);
     const toggleWishlist = useWishlistStore((s) => s.toggleItem);
     const isWishlisted = useWishlistStore((s) => s.isWishlisted(id));
+    const { token } = useAuthStore();
     const { addToast } = useToast();
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedSize, setSelectedSize] = useState(0);
@@ -66,7 +68,7 @@ export default function ProductDetail() {
     const handleAdd = (e) => {
         e.preventDefault();
         for (let i = 0; i < quantity; i++) {
-            addItem(product, product.sizes ? product.sizes[selectedSize] : 'Standard');
+            addItem(product, product.sizes ? product.sizes[selectedSize] : 'Standard', token);
         }
         addToast(`${product.name} added to cart!`, 'success');
     };
@@ -74,7 +76,7 @@ export default function ProductDetail() {
     const handleBuyNow = (e) => {
         e.preventDefault();
         for (let i = 0; i < quantity; i++) {
-            addItem(product, product.sizes ? product.sizes[selectedSize] : 'Standard');
+            addItem(product, product.sizes ? product.sizes[selectedSize] : 'Standard', token);
         }
         navigate('/cart');
     };
