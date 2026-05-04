@@ -1,5 +1,6 @@
 const Refund = require("../models/Refund");
 const Order  = require("../models/Order");
+const emailService = require("../utils/emailService");
 
 // ────────────────────────────────────────────────────
 // POST /api/refunds   (protected — user)
@@ -117,7 +118,10 @@ const updateRefundStatus = async (req, res, next) => {
             throw new Error(`status must be one of: ${VALID.join(", ")}`);
         }
 
-        const refund = await Refund.findById(req.params.id);
+        const refund = await Refund.findById(req.params.id)
+            .populate("user", "firstName lastName email")
+            .populate("order", "orderNumber totalAmount");
+
         if (!refund) {
             res.status(404);
             throw new Error("Refund not found");
@@ -138,7 +142,7 @@ const updateRefundStatus = async (req, res, next) => {
 
         // If completed, mark the parent order payment as refunded
         if (status === "completed") {
-            await Order.findByIdAndUpdate(refund.order, {
+            await Order.findByIdAndUpdate(refund.order._id, {
                 paymentStatus: "refunded",
                 $push: {
                     statusHistory: {
@@ -150,6 +154,20 @@ const updateRefundStatus = async (req, res, next) => {
         }
 
         const updated = await refund.save();
+
+        // Send Status Emails
+        if (status === "approved") {
+            emailService.sendRefundInitiated(updated.user, {
+                orderNumber: updated.order.orderNumber,
+                amount: updated.amount
+            }).catch(console.error);
+        } else if (status === "completed") {
+            emailService.sendRefundSuccessful(updated.user, {
+                orderNumber: updated.order.orderNumber,
+                amount: updated.amount
+            }).catch(console.error);
+        }
+
         res.json(updated);
     } catch (err) {
         next(err);

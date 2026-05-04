@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import useAuthStore from './authStore';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const useSiteStore = create((set, get) => ({
-    settings: {}, // Store flat settings map
+    settings: {},
     loading: false,
     error: null,
 
@@ -21,14 +20,14 @@ const useSiteStore = create((set, get) => ({
 
         set({ loading: true, error: null });
         try {
-            const { data } = await axios.get(`${API_URL}/settings`);
+            const { data } = await axios.get('http://localhost:5000/api/settings/public-settings');
             
             set({ 
                 settings: data,
-                heroSlides:   data.hero_slides   || [],
-                statsData:    data.stats_data    || [],
-                whyUsData:    data.why_us_data   || [],
-                testimonials: data.testimonials  || [],
+                heroSlides:   data.heroSlides   || [],
+                statsData:    data.statsData    || [],
+                whyUsData:    data.whyUsData    || [],
+                testimonials: data.testimonials || [],
                 loading: false 
             });
         } catch (error) {

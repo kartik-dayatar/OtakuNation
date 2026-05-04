@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Package, LayoutDashboard, Settings, LogOut, ShoppingCart, Users, Search, Bell, Store, Menu, X, AlertTriangle, Star } from 'lucide-react';
 import useProductStore from '../../../store/productStore';
+import useAdminStore from '../../../store/adminStore';
 import useAuthStore from '../../../store/authStore';
 import './AdminLayout.css';
 import '../../../pages/Admin/AdminShared.css';
@@ -14,45 +15,11 @@ const routeLabels = {
     '/admin/settings': 'Settings',
 };
 
-const MOCK_ORDERS = [
-    { id: 'ORD-8902', customer: 'Sakura M.' },
-    { id: 'ORD-8901', customer: 'Kenji R.' },
-    { id: 'ORD-8900', customer: 'Aiko T.' },
-    { id: 'ORD-8899', customer: 'Haruto K.' },
-    { id: 'ORD-8898', customer: 'Yuki S.' },
-];
-
-const NOTIFICATIONS = [
-    {
-        icon: AlertTriangle,
-        color: '#d97706',
-        bg: '#fef3c7',
-        title: 'Low stock alert',
-        desc: 'Gojo Satoru Figure is out of stock',
-        time: '5 min ago',
-    },
-    {
-        icon: ShoppingCart,
-        color: '#6366f1',
-        bg: '#eef2ff',
-        title: 'New Order #ORD-8902',
-        desc: 'Sakura M. placed an order for ₹373.50',
-        time: '12 min ago',
-    },
-    {
-        icon: Star,
-        color: '#059669',
-        bg: '#d1fae5',
-        title: 'New Review',
-        desc: 'A customer left a 5-star review on Demon Slayer Haori',
-        time: '1 hr ago',
-    },
-];
-
 function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
-    const products = useProductStore(state => state.products);
+    const { products, fetchProducts } = useProductStore();
+    const { orders, fetchOrders } = useAdminStore();
     const { user, logout } = useAuthStore();
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -60,40 +27,52 @@ function AdminLayout() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
 
-    const [searchRef, notifRef] = [useRef(null), useRef(null)];
+    const searchRef = useRef(null);
+    const notifRef = useRef(null);
 
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            icon: AlertTriangle,
-            color: '#d97706',
-            bg: '#fef3c7',
-            title: 'Low stock alert',
-            desc: 'Gojo Satoru Figure is out of stock',
-            time: '5 min ago',
-            read: false,
-        },
-        {
-            id: 2,
-            icon: ShoppingCart,
-            color: '#6366f1',
-            bg: '#eef2ff',
-            title: 'New Order #ORD-8902',
-            desc: 'Sakura M. placed an order for ₹373.50',
-            time: '12 min ago',
-            read: false,
-        },
-        {
-            id: 3,
-            icon: Star,
-            color: '#059669',
-            bg: '#d1fae5',
-            title: 'New Review',
-            desc: 'A customer left a 5-star review on Demon Slayer Haori',
-            time: '1 hr ago',
-            read: false,
-        },
-    ]);
+    // Dynamic Notifications based on store state
+    const [notifications, setNotifications] = useState([]);
+
+    useEffect(() => {
+        fetchProducts();
+        fetchOrders();
+    }, [fetchProducts, fetchOrders]);
+
+    useEffect(() => {
+        const notifs = [];
+        
+        // 1. Low stock alerts from real products
+        const lowStock = products.filter(p => p.stock <= (p.lowStockThreshold || 5));
+        lowStock.forEach(p => {
+            notifs.push({
+                id: `stock-${p._id}`,
+                icon: AlertTriangle,
+                color: '#d97706',
+                bg: '#fef3c7',
+                title: 'Low stock alert',
+                desc: `${p.name} is ${p.stock === 0 ? 'out of stock' : `running low (${p.stock} left)`}`,
+                time: 'Just now',
+                read: false,
+            });
+        });
+
+        // 2. Recent orders from real orders
+        const recentOrders = orders.slice(0, 5);
+        recentOrders.forEach(o => {
+            notifs.push({
+                id: `order-${o.dbId}`,
+                icon: ShoppingCart,
+                color: '#6366f1',
+                bg: '#eef2ff',
+                title: `New Order #${o.id}`,
+                desc: `${o.customer} placed an order for ₹${o.total.toLocaleString()}`,
+                time: o.date,
+                read: false,
+            });
+        });
+
+        setNotifications(notifs.slice(0, 10));
+    }, [products, orders]);
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -115,7 +94,7 @@ function AdminLayout() {
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
-    }, [searchRef, notifRef]);
+    }, []);
 
     // Close mobile sidebar on route change
     useEffect(() => {
@@ -138,9 +117,9 @@ function AdminLayout() {
             .slice(0, 3)
             .map(p => ({ label: p.name, path: '/admin/inventory', type: 'Product' }));
 
-        const matchedOrders = MOCK_ORDERS
+        const matchedOrders = orders
             .filter(o => o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q))
-            .slice(0, 2)
+            .slice(0, 3)
             .map(o => ({ label: `${o.id} — ${o.customer}`, path: '/admin/orders', type: 'Order' }));
 
         return [...pages, ...matchedProducts, ...matchedOrders];

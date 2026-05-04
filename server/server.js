@@ -16,7 +16,10 @@ const articleRoutes = require("./routes/articleRoutes");
 const siteSettingRoutes = require("./routes/siteSettingRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
 const contactRoutes = require("./routes/contactRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+const { initCronJobs } = require("./utils/cronJobs");
 
 // ── Register all Mongoose models at startup ──────────────
 // Required so cross-model hooks (e.g. Review → Product) resolve correctly
@@ -66,6 +69,8 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/settings", siteSettingRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // ── Error Handling ───────────────────────────────────
 app.use(notFound);
@@ -76,4 +81,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
+    
+    // Initialize automated tasks
+    initCronJobs();
 });

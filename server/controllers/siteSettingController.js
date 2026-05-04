@@ -1,34 +1,77 @@
 const SiteSetting = require("../models/SiteSetting");
+const emailService = require("../utils/emailService");
 
-// GET /api/settings
-// If ?key=hero_slides is provided, returns just that setting. Otherwise, returns all.
-const getSettings = async (req, res, next) => {
+// GET /api/settings/public-settings
+// Public route — NO auth middleware, returns only UI-facing fields
+const getPublicSettings = async (req, res) => {
     try {
-        const { key } = req.query;
-        if (key) {
-            const setting = await SiteSetting.findOne({ key });
-            return res.json(setting || null);
+        const allSettings = await SiteSetting.find({});
+
+        const map = {};
+        for (const s of allSettings) {
+            try { map[s.key] = JSON.parse(s.value); }
+            catch (e) { map[s.key] = s.value; }
         }
 
-        const settings = await SiteSetting.find();
+        res.json({
+            heroSlides:   map['hero_slides']   || map['heroSlides']   || [],
+            statsData:    map['stats_data']    || map['statsData']    || [],
+            whyUsData:    map['why_us_data']   || map['whyUsData']   || [],
+            testimonials: map['testimonials']                         || [],
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to fetch settings' });
+    }
+};
+
+// GET /api/settings
+// Public route that returns only non-sensitive UI settings
+const getSettings = async (req, res, next) => {
+    try {
+        const allSettings = await SiteSetting.find({});
         
-        // Convert array of [{key: "...", value: "..."}] to an object { key: value, ... }
-        // Attempt to JSON.parse the values where applicable.
-        const settingsMap = {};
-        for (const s of settings) {
+        // Build a key → parsed value map from all DB records
+        const map = {};
+        for (const s of allSettings) {
             try {
-                // E.g. "hero_slides" is stored as stringified JSON
-                settingsMap[s.key] = JSON.parse(s.value);
+                map[s.key] = JSON.parse(s.value);
             } catch (e) {
-                // Flat string
-                settingsMap[s.key] = s.value;
+                map[s.key] = s.value;
             }
         }
         
-        res.json(settingsMap);
+        // Return camelCase keys (try both snake_case and camelCase DB keys)
+        res.json({
+            heroSlides:   map['hero_slides']   || map['heroSlides']   || [],
+            statsData:    map['stats_data']    || map['statsData']    || [],
+            whyUsData:    map['why_us_data']   || map['whyUsData']   || [],
+            testimonials: map['testimonials']                         || [],
+        });
     } catch (err) {
         next(err);
     }
 };
 
-module.exports = { getSettings };
+// POST /api/settings/contact
+const submitContactForm = async (req, res, next) => {
+    try {
+        const { name, email, subject, message } = req.body;
+
+        if (!name || !email || !message) {
+            res.status(400);
+            throw new Error("Name, email and message are required");
+        }
+
+        // Send email response to user
+        emailService.sendContactResponse({ firstName: name, email }, { 
+            subject: subject || "Your inquiry", 
+            message 
+        }).catch(console.error);
+
+        res.json({ message: "Thank you for contacting us. We will get back to you soon." });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { getPublicSettings, getSettings, submitContactForm };

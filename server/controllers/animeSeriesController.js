@@ -8,7 +8,7 @@ const getAnimeSeries = async (req, res, next) => {
         const series = seriesRaw.map(s => {
             const url = s.thumbnailUrl;
             const resolvedUrl = (url && !url.startsWith('http') && !url.startsWith('/src') && !url.startsWith('/assets') && !url.startsWith('data:'))
-                ? `/src/assets/images/${url}`
+                ? `/assets/images/${url}`
                 : url;
             
             return {
