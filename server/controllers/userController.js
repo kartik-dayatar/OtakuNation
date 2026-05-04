@@ -1,8 +1,8 @@
-const jwt   = require("jsonwebtoken");
-const User  = require("../models/User");
-const Order = require("../models/Order");
+const jwt    = require("jsonwebtoken");
 const crypto = require("crypto");
-const { sendPasswordResetEmail } = require("../utils/emailService");
+const User   = require("../models/User");
+const Order  = require("../models/Order");
+const emailService = require("../utils/emailService");
 
 // ── Helper: sign JWT ─────────────────────────────────
 const signToken = (id) =>
@@ -45,7 +45,21 @@ const register = async (req, res, next) => {
             throw new Error("An account with this email already exists");
         }
 
-        const user = await User.create({ firstName, lastName, email, password });
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+
+        const user = await User.create({ 
+            firstName, 
+            lastName, 
+            email, 
+            password,
+            isEmailVerified: true, // Default to true
+            verificationToken: null 
+        });
+
+        // Fire and forget email
+        emailService.sendVerificationEmail(user, verificationToken).catch(console.error);
+
         const token = signToken(user._id);
 
         res.status(201).json({ token, user: safeUser(user) });
@@ -72,7 +86,20 @@ const login = async (req, res, next) => {
             throw new Error("Invalid email or password");
         }
 
+
         const token = signToken(user._id);
+        const userAgent = req.headers["user-agent"] || "Unknown Device";
+
+        // Check for new device login alert
+        if (user.lastLoginDevice && user.lastLoginDevice !== userAgent) {
+            emailService.sendNewLoginAlert(user, userAgent).catch(console.error);
+        }
+
+        // Update login tracking
+        user.lastLoginDevice = userAgent;
+        user.lastLoginAt = Date.now();
+        await user.save();
+
         res.json({ token, user: safeUser(user) });
     } catch (err) {
         next(err);
@@ -100,73 +127,153 @@ const adminLogin = async (req, res, next) => {
 };
 
 // ────────────────────────────────────────────────────
-// POST /api/users/forgot-password
+// GET /api/users/verify-email/:token
 // ────────────────────────────────────────────────────
-const forgotPassword = async (req, res, next) => {
+const verifyEmail = async (req, res, next) => {
     try {
-        const { email } = req.body;
-        if (!email) {
-            res.status(400);
-            throw new Error("Email is required");
-        }
+        const { token } = req.params;
+        const user = await User.findOne({ verificationToken: token });
 
-        const user = await User.findOne({ email });
         if (!user) {
-            // Return 200 even if user doesn't exist to prevent email enumeration
-            return res.json({ message: "If an account exists with this email, a password reset link has been sent." });
+            res.status(400);
+            throw new Error("Invalid or expired verification token");
         }
 
-        const resetToken = crypto.randomBytes(32).toString("hex");
-        
-        user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-        user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
-
+        user.isEmailVerified = true;
+        user.verificationToken = null;
         await user.save();
 
-        const emailSent = await sendPasswordResetEmail(user.email, resetToken);
+        // Send welcome email
+        emailService.sendWelcomeEmail(user).catch(console.error);
 
-        if (!emailSent) {
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined;
-            await user.save();
-            res.status(500);
-            throw new Error("There was an error sending the email. Try again later!");
-        }
-
-        res.json({ message: "If an account exists with this email, a password reset link has been sent." });
+        res.json({ message: "Email verified successfully. You can now login." });
     } catch (err) {
         next(err);
     }
 };
 
 // ────────────────────────────────────────────────────
-// POST /api/users/reset-password/:token
+// POST /api/users/forgot-password
+// ────────────────────────────────────────────────────
+const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        // Security: Return success even if user not found
+        if (!user) {
+            return res.json({ success: true, message: "OTP sent to your email" });
+        }
+
+        // Rate limiting: 60 seconds
+        if (user.resetOTPLastSent && (Date.now() - user.resetOTPLastSent) < 60000) {
+            res.status(429);
+            throw new Error("Please wait 60 seconds before requesting a new OTP");
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        user.resetOTP = otp;
+        user.resetOTPExpiry = Date.now() + 600000; // 10 minutes
+        user.resetOTPAttempts = 0;
+        user.resetOTPLastSent = Date.now();
+        await user.save();
+
+        emailService.sendPasswordResetEmail(user, otp).catch(console.error);
+
+        res.json({ success: true, message: "OTP sent to your email" });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// POST /api/users/verify-otp
+// ────────────────────────────────────────────────────
+const verifyOTP = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user || !user.resetOTP) {
+            res.status(400);
+            throw new Error("Invalid request");
+        }
+
+        if (user.resetOTPExpiry < Date.now()) {
+            res.status(400);
+            throw new Error("OTP has expired, please request a new one");
+        }
+
+        if (user.resetOTPAttempts >= 5) {
+            res.status(429);
+            throw new Error("Too many wrong attempts, please request a new OTP");
+        }
+
+        if (otp !== user.resetOTP) {
+            user.resetOTPAttempts += 1;
+            await user.save();
+            res.status(400);
+            throw new Error(`Incorrect OTP. ${5 - user.resetOTPAttempts} attempts remaining`);
+        }
+
+        // OTP matches
+        const resetToken = crypto.randomUUID(); // Requires Node 15+ or 14.17+
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpire = Date.now() + 900000; // 15 minutes
+        
+        // Clear OTP fields
+        user.resetOTP = null;
+        user.resetOTPExpiry = null;
+        user.resetOTPAttempts = 0;
+        
+        await user.save();
+
+        res.json({ success: true, resetToken });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// POST /api/users/reset-password
 // ────────────────────────────────────────────────────
 const resetPassword = async (req, res, next) => {
     try {
-        const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+        const { resetToken, newPassword } = req.body;
 
         const user = await User.findOne({
-            resetPasswordToken: hashedToken,
-            resetPasswordExpires: { $gt: Date.now() }
+            resetPasswordToken:  resetToken,
+            resetPasswordExpire: { $gt: Date.now() }
         });
 
         if (!user) {
             res.status(400);
-            throw new Error("Token is invalid or has expired");
+            throw new Error("Reset link expired, please start over");
         }
 
-        if (!req.body.password || req.body.password.length < 8) {
+        // Validate newPassword: min 8, one number, one letter
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(newPassword)) {
             res.status(400);
-            throw new Error("Password must be at least 8 characters");
+            throw new Error("Password must be at least 8 characters and contain at least one letter and one number");
         }
 
-        user.password = req.body.password;
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
+        user.password = newPassword;
+        
+        // Clear all reset fields
+        user.resetPasswordToken = null;
+        user.resetPasswordExpire = null;
+        user.resetOTP = null;
+        user.resetOTPExpiry = null;
+        user.resetOTPAttempts = 0;
+
         await user.save();
 
-        res.json({ message: "Password updated successfully." });
+        emailService.sendPasswordChangedConfirmation(user).catch(console.error);
+
+        res.json({ success: true, message: "Password reset successful" });
     } catch (err) {
         next(err);
     }
@@ -196,15 +303,22 @@ const updateProfile = async (req, res, next) => {
         });
 
         // Allow password change only if currentPassword matches
+        let passwordChanged = false;
         if (req.body.newPassword) {
             if (!(await user.matchPassword(req.body.currentPassword))) {
                 res.status(400);
                 throw new Error("Current password is incorrect");
             }
             user.password = req.body.newPassword;
+            passwordChanged = true;
         }
 
         const updated = await user.save();
+
+        if (passwordChanged) {
+            emailService.sendPasswordChangedConfirmation(updated).catch(console.error);
+        }
+
         res.json(safeUser(updated));
     } catch (err) {
         next(err);
@@ -217,13 +331,23 @@ const updateProfile = async (req, res, next) => {
 const addAddress = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id);
-        const { name, street, city, state, pincode, mobile, isDefault } = req.body;
+        const { recipientName, addressLine1, addressLine2, city, state, postalCode, phone, type, isDefault } = req.body;
 
         if (isDefault) {
             user.addresses.forEach((a) => (a.isDefault = false));
         }
 
-        user.addresses.push({ name, street, city, state, pincode, mobile, isDefault: isDefault || user.addresses.length === 0 });
+        user.addresses.push({ 
+            recipientName, 
+            addressLine1, 
+            addressLine2: addressLine2 || "",
+            city, 
+            state, 
+            postalCode, 
+            phone: phone || "",
+            type: type || 'HOME',
+            isDefault: isDefault || user.addresses.length === 0 
+        });
         await user.save();
         res.status(201).json(user.addresses);
     } catch (err) {
@@ -240,6 +364,64 @@ const deleteAddress = async (req, res, next) => {
         user.addresses = user.addresses.filter(
             (a) => a._id.toString() !== req.params.addrId
         );
+        await user.save();
+        res.json(user.addresses);
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// PUT /api/users/addresses/:addrId   (protected)
+// ────────────────────────────────────────────────────
+const updateAddress = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const addr = user.addresses.id(req.params.addrId);
+        if (!addr) {
+            res.status(404);
+            throw new Error("Address not found");
+        }
+
+        const { recipientName, addressLine1, addressLine2, city, state, postalCode, phone, type, isDefault } = req.body;
+
+        if (isDefault && !addr.isDefault) {
+            user.addresses.forEach((a) => (a.isDefault = false));
+        }
+
+        addr.recipientName = recipientName || addr.recipientName;
+        addr.addressLine1 = addressLine1 || addr.addressLine1;
+        addr.addressLine2 = addressLine2 !== undefined ? addressLine2 : addr.addressLine2;
+        addr.city = city || addr.city;
+        addr.state = state || addr.state;
+        addr.postalCode = postalCode || addr.postalCode;
+        addr.phone = phone || addr.phone;
+        addr.type = type || addr.type;
+        if (isDefault !== undefined) addr.isDefault = isDefault;
+
+        await user.save();
+        res.json(user.addresses);
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ────────────────────────────────────────────────────
+// PATCH /api/users/addresses/:addrId/default   (protected)
+// ────────────────────────────────────────────────────
+const setDefaultAddress = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const addr = user.addresses.id(req.params.addrId);
+        if (!addr) {
+            res.status(404);
+            throw new Error("Address not found");
+        }
+
+        user.addresses.forEach((a) => {
+            a.isDefault = (a._id.toString() === req.params.addrId);
+        });
+
         await user.save();
         res.json(user.addresses);
     } catch (err) {
@@ -267,8 +449,13 @@ const getCart = async (req, res, next) => {
         const user = await User.findById(req.user._id)
             .populate("cart.product", "name price comparePrice images stockQuantity sizes status badgeLabel ratingAvg reviewCount slug");
 
+        if (!user) {
+            res.status(404);
+            throw new Error("User not found");
+        }
+
         // Filter out any cart items whose product has been deleted
-        const validItems = user.cart.filter((item) => item.product !== null);
+        const validItems = (user.cart || []).filter((item) => item && item.product !== null);
         res.json(validItems);
     } catch (err) {
         next(err);
@@ -393,8 +580,9 @@ const syncCart = async (req, res, next) => {
 
         // Merge: for each incoming item, add or increment in DB cart
         for (const incoming of items) {
-            const existingIdx = user.cart.findIndex(
+            const existingIdx = (user.cart || []).findIndex(
                 (item) =>
+                    item && item.product &&
                     item.product.toString() === incoming.productId &&
                     item.sizeLabel === (incoming.sizeLabel || null)
             );
@@ -517,8 +705,8 @@ const deleteUser = async (req, res, next) => {
 
 module.exports = {
     register, login, adminLogin, getProfile, updateProfile,
-    forgotPassword, resetPassword,
-    addAddress, deleteAddress, getAllUsers, getCustomerById, deleteUser,
+    verifyEmail, forgotPassword, verifyOTP, resetPassword,
+    addAddress, updateAddress, deleteAddress, setDefaultAddress, getAllUsers, getCustomerById, deleteUser,
     getCart, addToCart, updateCartItem, removeFromCart, clearCart, syncCart,
     getWishlist, toggleWishlist,
 };

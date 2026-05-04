@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import './Login.css';
 
 export default function Login() {
     const navigate  = useNavigate();
+    const [searchParams] = useSearchParams();
+    const redirectTo = searchParams.get('redirect') || '/';
     const { login, loading } = useAuthStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -36,11 +38,11 @@ export default function Login() {
 
         const result = await login({ email, password });
         if (result.success) {
-            // Redirect admin to admin panel, regular user to home
+            // Admins always go to admin panel; regular users go to redirect target
             if (result.user?.role === 'admin') {
                 navigate('/admin');
             } else {
-                navigate('/');
+                navigate(redirectTo, { replace: true });
             }
         } else {
             setErrors({ api: result.message });

@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useCartStore from '../../store/cartStore';
-import useProductStore from '../../store/productStore';
+import useWishlistStore from '../../store/wishlistStore';
+import useAuthStore from '../../store/authStore';
 import './Wishlist.css';
 
 export default function Wishlist() {
-    // Mock wishlist data - using real products
-    const products = useProductStore((state) => state.products);
-    const [wishlist, setWishlist] = useState(products.slice(0, 6));
+    const { items: wishlist, toggleItem } = useWishlistStore();
+    const token = useAuthStore((state) => state.token);
     const navigate = useNavigate();
 
     const addItem = useCartStore((state) => state.addItem);
 
-    const handleRemove = (id) => {
-        setWishlist(wishlist.filter(item => item.id !== id));
+    const handleRemove = async (id) => {
+        await toggleItem({ _id: id }, token);
     };
 
     const handleAddToCart = (item) => {
-        addItem(item, item.sizes ? item.sizes[0] : 'M'); // Default to M or first size
+        addItem(item, item.sizes ? item.sizes[0] : 'M', token); 
         navigate('/cart');
     };
 

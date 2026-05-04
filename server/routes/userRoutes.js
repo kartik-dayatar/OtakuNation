@@ -5,10 +5,16 @@ const {
     register,
     login,
     adminLogin,
+    verifyEmail,
+    forgotPassword,
+    verifyOTP,
+    resetPassword,
     getProfile,
     updateProfile,
     addAddress,
+    updateAddress,
     deleteAddress,
+    setDefaultAddress,
     getAllUsers,
     getCustomerById,
     getCart,
@@ -20,8 +26,6 @@ const {
     getWishlist,
     toggleWishlist,
     deleteUser,
-    forgotPassword,
-    resetPassword,
 } = require("../controllers/userController");
 
 
@@ -31,14 +35,18 @@ const { protect, adminOnly } = require("../middleware/authMiddleware");
 router.post("/register",      register);
 router.post("/login",         login);
 router.post("/admin/login",   adminLogin);
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password/:token", resetPassword);
+router.get("/verify-email/:token", verifyEmail);
+router.post("/forgot-password",    forgotPassword);
+router.post("/verify-otp",         verifyOTP);
+router.post("/reset-password",      resetPassword);
 
 // ── Protected (any logged-in user) ───────────────────
 router.get("/profile",           protect, getProfile);
 router.put("/profile",           protect, updateProfile);
 router.post("/addresses",        protect, addAddress);
+router.put("/addresses/:addrId", protect, updateAddress);
 router.delete("/addresses/:addrId", protect, deleteAddress);
+router.patch("/addresses/:addrId/default", protect, setDefaultAddress);
 
 // ── Admin only ────────────────────────────────────────
 router.get("/",     protect, adminOnly, getAllUsers);

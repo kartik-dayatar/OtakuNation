@@ -64,6 +64,21 @@ const userSchema = new mongoose.Schema(
 
         // SQL: cart_items → embedded array
         cart: [cartItemSchema],
+
+        // ── Auth & Email Extensions ─────────────────────
+        isEmailVerified:   { type: Boolean, default: false },
+        verificationToken: { type: String,  default: null },
+        
+        resetPasswordToken:  { type: String, default: null },
+        resetPasswordExpire: { type: Date,   default: null },
+
+        resetOTP:         { type: String, default: null },
+        resetOTPExpiry:   { type: Date,   default: null },
+        resetOTPAttempts: { type: Number, default: 0 },
+        resetOTPLastSent: { type: Date,   default: null },
+
+        lastLoginDevice:         { type: String, default: "" }, // user-agent string
+        lastAbandonedCartEmail:  { type: Date,   default: null },
     },
     { timestamps: true }
 );

@@ -158,6 +158,38 @@ const useAuthStore = create((set, get) => ({
         }
     },
 
+    updateAddress: async (addrId, addressData) => {
+        set({ loading: true, error: null });
+        try {
+            const { data } = await axios.put(`${API_URL}/addresses/${addrId}`, addressData, { headers: get().getAuthHeader() });
+            const user = get().user;
+            const updatedUser = { ...user, addresses: data };
+            localStorage.setItem('on_user', JSON.stringify(updatedUser));
+            set({ user: updatedUser, loading: false });
+            return { success: true, addresses: data };
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to update address';
+            set({ loading: false, error: msg });
+            return { success: false, message: msg };
+        }
+    },
+
+    setDefaultAddress: async (addrId) => {
+        set({ loading: true, error: null });
+        try {
+            const { data } = await axios.patch(`${API_URL}/addresses/${addrId}/default`, {}, { headers: get().getAuthHeader() });
+            const user = get().user;
+            const updatedUser = { ...user, addresses: data };
+            localStorage.setItem('on_user', JSON.stringify(updatedUser));
+            set({ user: updatedUser, loading: false });
+            return { success: true, addresses: data };
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Failed to set default address';
+            set({ loading: false, error: msg });
+            return { success: false, message: msg };
+        }
+    },
+
     deleteAddress: async (addrId) => {
         set({ loading: true, error: null });
         try {
