@@ -4,6 +4,8 @@ import { lazy, Suspense } from 'react';
 import Layout from './components/Layout/Layout';
 import PostLoginLayout from './components/Layout/PostLoginLayout';
 import RequireAdmin from './components/Layout/RequireAdmin';
+import RequireAuth from './components/Layout/RequireAuth';
+import ScrollToTop from './components/ScrollToTop';
 import { ToastProvider } from './components/ui/Toast';
 import useAuthStore from './store/authStore';
 
@@ -23,13 +25,16 @@ const Cart              = lazy(() => import('./pages/Checkout/Cart'));
 const Checkout          = lazy(() => import('./pages/Checkout/Checkout'));
 const Payment           = lazy(() => import('./pages/Checkout/Payment'));
 const OrderConfirmation = lazy(() => import('./pages/Checkout/OrderConfirmation'));
+const OrderSuccess      = lazy(() => import('./pages/Checkout/OrderSuccess'));
 
 // ── User Pages ─────────────────────────────────────────────────────────────
-const Account       = lazy(() => import('./pages/User/Account'));
-const OrderTracking = lazy(() => import('./pages/User/OrderTracking'));
-const Wishlist      = lazy(() => import('./pages/User/Wishlist'));
-const MyOrders      = lazy(() => import('./pages/User/MyOrders'));
-const AddReview     = lazy(() => import('./pages/User/AddReview'));
+const AccountLayout    = lazy(() => import('./components/Layout/User/AccountLayout'));
+const AccountOverview  = lazy(() => import('./pages/User/AccountOverview'));
+const OrdersReturns    = lazy(() => import('./pages/User/OrdersReturns'));
+const ProfileDetails   = lazy(() => import('./pages/User/ProfileDetails'));
+const Addresses        = lazy(() => import('./pages/User/Addresses'));
+const OrderTracking    = lazy(() => import('./pages/User/OrderTracking'));
+const Wishlist         = lazy(() => import('./pages/User/Wishlist'));
 
 // ── Auth Pages ─────────────────────────────────────────────────────────────
 const Login          = lazy(() => import('./pages/Auth/Login'));
@@ -60,6 +65,7 @@ function Logout() {
 function App() {
     return (
         <BrowserRouter>
+            <ScrollToTop />
             <ToastProvider>
                 <Suspense fallback={null}>
                     <Routes>
@@ -85,17 +91,28 @@ function App() {
 
                         {/*
                          * ── PRIVATE pages – POST-LOGIN navbar ────────────
+                         * RequireAuth redirects guests to /login.
+                         * PostLoginLayout renders the logged-in navbar.
                          */}
-                        <Route element={<PostLoginLayout />}>
-                            <Route path="/cart"               element={<Cart />} />
-                            <Route path="/checkout"           element={<Checkout />} />
-                            <Route path="/payment"            element={<Payment />} />
-                            <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                            <Route path="/account"            element={<Account />} />
-                            <Route path="/order-tracking"     element={<OrderTracking />} />
-                            <Route path="/wishlist"           element={<Wishlist />} />
-                            <Route path="/orders"             element={<MyOrders />} />
-                            <Route path="/add-review/:productId" element={<AddReview />} />
+                        <Route element={<RequireAuth />}>
+                            <Route element={<PostLoginLayout />}>
+                                <Route path="/cart"               element={<Cart />} />
+                                <Route path="/checkout"           element={<Checkout />} />
+                                <Route path="/payment"            element={<Payment />} />
+                                <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                                <Route path="/order-success"      element={<OrderSuccess />} />
+                                
+                                {/* Nested Account Routes */}
+                                <Route path="/account" element={<AccountLayout />}>
+                                    <Route index element={<Navigate to="overview" replace />} />
+                                    <Route path="overview" element={<AccountOverview />} />
+                                    <Route path="orders" element={<OrdersReturns />} />
+                                    <Route path="orders/:orderId" element={<OrderTracking />} />
+                                    <Route path="profile" element={<ProfileDetails />} />
+                                    <Route path="addresses" element={<Addresses />} />
+                                </Route>
+                                <Route path="/wishlist"           element={<Wishlist />} />
+                            </Route>
                         </Route>
 
                         {/* ── Admin Login (public, no layout wrapper) ────── */}

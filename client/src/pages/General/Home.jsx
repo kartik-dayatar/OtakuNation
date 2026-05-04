@@ -57,7 +57,7 @@ function Home() {
 
     const { products, fetchProducts, loading: productLoading, animeSeries, fetchAnimeSeries } = useProductStore();
     const { fetchSettings, loading: siteLoading, heroSlides, statsData, whyUsData, testimonials } = useSiteStore();
-    const { fetchArticles, getNews, getBlogs } = useArticleStore();
+    const { fetchArticles, getBlogs } = useArticleStore();
 
     // Ensure we fetch all necessary data
     useEffect(() => {
@@ -221,8 +221,16 @@ function Home() {
                         <div className="anime-scroll-track" ref={scrollTrackRef}>
                             {animeSeries.map((anime, i) => (
                                 <div key={anime._id || i} onClick={() => navigate(`/products?anime=${anime.slug}`)} className="anime-card" style={{ cursor: 'pointer' }}>
-                                    <div className="anime-card-img" style={{ background: `linear-gradient(135deg, ${anime.gradientFrom}, ${anime.gradientTo})` }}>
-                                        {anime.thumbnailUrl && <img src={anime.thumbnailUrl.startsWith('/') ? anime.thumbnailUrl : `/assets/images/${anime.thumbnailUrl}`} alt={anime.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                                    <div className="anime-card-img">
+                                        {anime.thumbnailUrl ? (
+                                            <img 
+                                                src={anime.thumbnailUrl || '/assets/images/placeholder.png'} 
+                                                alt={anime.name} 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                            />
+                                        ) : (
+                                            <div style={{ background: `linear-gradient(135deg, ${anime.gradientFrom}, ${anime.gradientTo})`, width: '100%', height: '100%' }}></div>
+                                        )}
                                     </div>
                                     <h3>{anime.name}</h3><span className="anime-card-count">Explore &rarr;</span>
                                 </div>
@@ -351,30 +359,6 @@ function Home() {
                 </div>
             </section>
 
-            {/* 7. ANIME NEWS */}
-            <section className="section" id="news">
-                <div className="container">
-                    <div className="section-header fade-in">
-                        <div>
-                            <h2>Latest Anime News</h2>
-                            <p>Stay updated with the otaku world</p>
-                        </div>
-                    </div>
-                    <div className="news-grid">
-                        {getNews().map((news, i) => (
-                            <article key={news._id || i} className="news-card fade-in">
-                                <div className="news-img">
-                                    <img src={news.imageUrl} alt={news.title} />
-                                </div>
-                                <div className="news-body"><span className="news-tag">{news.categoryTag || 'News'}</span>
-                                    <h3>{news.title}</h3>
-                                    <p>{news.excerpt}</p><a href="#" className="news-link">Read More <FaLongArrowAltRight /></a>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
             {/* 8. BLOG */}
             <section className="section section-alt" id="blog">

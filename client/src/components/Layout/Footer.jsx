@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
-import { useToast } from '../ui/Toast'; // Assuming we use the existing global ToastProvider
+import { useToast } from '../ui/Toast'; 
 
 function Footer() {
     const { addToast } = useToast();
+    // storeName hardcoded — avoids calling protected /api/admin/settings on public pages
+    const storeName = 'OtakuNation';
 
     // Check URL params for 'toast' (e.g. ?toast=added) - User requested logic
     useEffect(() => {
@@ -23,7 +25,7 @@ function Footer() {
                 <div className="footer-brand">
                     <div className="logo">
                         <Link to="/">
-                            <img src="/assets/Logo.png" alt="OtakuNation" style={{ height: '32px', width: 'auto' }} />
+                            <img src="/assets/Logo.png" alt={storeName} style={{ height: '32px', width: 'auto' }} />
                         </Link>
                     </div>
                     <p>Your premium destination for officially licensed anime merchandise, apparel, and collectibles.</p>
@@ -58,7 +60,7 @@ function Footer() {
             </div>
 
             <div className="footer-bottom">
-                <p>© {new Date().getFullYear()} OtakuNation. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
                 <div className="footer-bottom-links">
                     <a href="#">Privacy Policy</a>
                     <a href="#">Terms of Service</a>
