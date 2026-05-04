@@ -29,7 +29,7 @@ export default function OrdersReturns() {
     const resolveImageUrl = (img) => {
         if (!img) return "/assets/placeholder.png";
         if (img.startsWith('http') || img.startsWith('/src') || img.startsWith('/assets') || img.startsWith('data:')) return img;
-        return `/src/assets/images/products/${img}`;
+        return `http://localhost:5000/uploads/products/${img}`;
     };
 
     const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

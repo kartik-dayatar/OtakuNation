@@ -170,14 +170,18 @@
 }
 
 .wishlist-remove {
-    flex: 0 0 auto !important;
-    color: #ef4444 !important;
-    border-color: #ef4444 !important;
-    padding: 10px 16px !important;
+    flex: 0 0 auto;
+    color: #ef4444;
+    background: transparent;
+    border: 1px solid #fee2e2;
+    padding: 10px 16px;
+    box-shadow: none;
 }
 
 .wishlist-remove:hover {
-    background: #fef2f2 !important;
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #dc2626;
 }
 
 

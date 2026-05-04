@@ -35,7 +35,7 @@ export default function Wishlist() {
                             {wishlist.map(item => (
                                 <article className="wishlist-card" key={item.id}>
                                     <div className="wishlist-image-slot">
-                                        <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px 12px 0 0' }} />
+                                        <img src={item.image || '/assets/placeholder.png'} alt={item.name} className="wishlist-img" />
                                     </div>
                                     <div className="wishlist-content">
                                         <Link to={`/product/${item.id}`} className="wishlist-title-link">
@@ -51,14 +51,14 @@ export default function Wishlist() {
 
                                     <div className="wishlist-actions">
                                         <button
-                                            className="btn primary"
+                                            className="btn btn-primary"
                                             onClick={() => handleAddToCart(item)}
                                             disabled={!item.inStock}
                                         >
                                             Add to Cart
                                         </button>
                                         <button
-                                            className="btn ghost wishlist-remove"
+                                            className="btn btn-secondary wishlist-remove"
                                             onClick={() => handleRemove(item.id)}
                                         >
                                             Remove

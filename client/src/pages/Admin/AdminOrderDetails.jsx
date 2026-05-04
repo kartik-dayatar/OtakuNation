@@ -127,7 +127,7 @@ const AdminOrderDetails = () => {
                                 <div key={idx} className="order-item-row">
                                     <div className="item-img-wrapper">
                                         <img 
-                                            src={item.productImage ? (item.productImage.startsWith('http') ? item.productImage : `/src/assets/images/products/${item.productImage}`) : '/assets/placeholder.png'} 
+                                            src={item.productImage ? (item.productImage.startsWith('http') || item.productImage.startsWith('/assets') || item.productImage.startsWith('data:') ? item.productImage : `http://localhost:5000/uploads/products/${item.productImage}`) : '/assets/placeholder.png'} 
                                             alt={item.productName} 
                                         />
                                     </div>

@@ -3,6 +3,12 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/users';
 
+const resolveImgPath = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('/src') || url.startsWith('/assets') || url.startsWith('data:')) return url;
+    return `http://localhost:5000/uploads/products/${url}`;
+};
+
 /**
  * Cart Store — Hybrid local-first + backend sync.
  *
@@ -53,9 +59,10 @@ const useCartStore = create((set, get) => ({
                 name:         item.product?.name,
                 price:        item.product?.price,
                 comparePrice: item.product?.comparePrice,
-                image:        item.product?.images?.find((i) => i.isPrimary)?.url
-                              || item.product?.images?.[0]?.url
-                              || null,
+                image:        resolveImgPath(
+                                  item.product?.images?.find((i) => i.isPrimary)?.url
+                                  || item.product?.images?.[0]?.url
+                              ) || null,
                 slug:         item.product?.slug,
                 stockQuantity: item.product?.stockQuantity,
                 sizes:        item.product?.sizes?.map((s) => s.sizeLabel) || [],
@@ -133,9 +140,10 @@ const useCartStore = create((set, get) => ({
                 name:         item.product?.name,
                 price:        item.product?.price,
                 comparePrice: item.product?.comparePrice,
-                image:        item.product?.images?.find((i) => i.isPrimary)?.url
-                              || item.product?.images?.[0]?.url
-                              || null,
+                image:        resolveImgPath(
+                                  item.product?.images?.find((i) => i.isPrimary)?.url
+                                  || item.product?.images?.[0]?.url
+                              ) || null,
                 slug:         item.product?.slug,
                 stockQuantity: item.product?.stockQuantity,
                 sizes:        item.product?.sizes?.map((s) => s.sizeLabel) || [],
@@ -172,7 +180,7 @@ const useCartStore = create((set, get) => ({
                     name:         product.name,
                     price:        product.price,
                     comparePrice: product.comparePrice,
-                    image:        product.image || product.images?.find((i) => i.isPrimary)?.url || product.images?.[0]?.url || null,
+                    image:        product.image || (typeof product.images?.[0] === 'string' ? product.images[0] : null) || resolveImgPath(product.images?.find((i) => i.isPrimary)?.url || product.images?.[0]?.url) || null,
                     slug:         product.slug,
                     stockQuantity: product.stockQuantity,
                     sizes:        product.sizes,
@@ -198,9 +206,10 @@ const useCartStore = create((set, get) => ({
                     name:         item.product?.name,
                     price:        item.product?.price,
                     comparePrice: item.product?.comparePrice,
-                    image:        item.product?.images?.find((i) => i.isPrimary)?.url
-                                  || item.product?.images?.[0]?.url
-                                  || null,
+                    image:        resolveImgPath(
+                                      item.product?.images?.find((i) => i.isPrimary)?.url
+                                      || item.product?.images?.[0]?.url
+                                  ) || null,
                     slug:         item.product?.slug,
                     stockQuantity: item.product?.stockQuantity,
                     sizes:        item.product?.sizes?.map((s) => s.sizeLabel) || [],
@@ -259,9 +268,10 @@ const useCartStore = create((set, get) => ({
                     name:         item.product?.name,
                     price:        item.product?.price,
                     comparePrice: item.product?.comparePrice,
-                    image:        item.product?.images?.find((i) => i.isPrimary)?.url
-                                  || item.product?.images?.[0]?.url
-                                  || null,
+                    image:        resolveImgPath(
+                                      item.product?.images?.find((i) => i.isPrimary)?.url
+                                      || item.product?.images?.[0]?.url
+                                  ) || null,
                     slug:         item.product?.slug,
                     stockQuantity: item.product?.stockQuantity,
                     sizes:        item.product?.sizes?.map((s) => s.sizeLabel) || [],
@@ -318,9 +328,10 @@ const useCartStore = create((set, get) => ({
                     name:         item.product?.name,
                     price:        item.product?.price,
                     comparePrice: item.product?.comparePrice,
-                    image:        item.product?.images?.find((i) => i.isPrimary)?.url
-                                  || item.product?.images?.[0]?.url
-                                  || null,
+                    image:        resolveImgPath(
+                                      item.product?.images?.find((i) => i.isPrimary)?.url
+                                      || item.product?.images?.[0]?.url
+                                  ) || null,
                     slug:         item.product?.slug,
                     stockQuantity: item.product?.stockQuantity,
                     sizes:        item.product?.sizes?.map((s) => s.sizeLabel) || [],

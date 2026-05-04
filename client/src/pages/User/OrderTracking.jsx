@@ -315,7 +315,7 @@ export default function OrderTracking() {
                     const itemName = item.productName || "Product";
                     let resolvedUrl = item.productImage || "/assets/placeholder.png";
                     if (resolvedUrl && !resolvedUrl.startsWith('http') && !resolvedUrl.startsWith('/src') && !resolvedUrl.startsWith('/assets') && !resolvedUrl.startsWith('data:')) {
-                        resolvedUrl = `/src/assets/images/products/${resolvedUrl}`;
+                        resolvedUrl = `http://localhost:5000/uploads/products/${resolvedUrl}`;
                     }
 
                     return (

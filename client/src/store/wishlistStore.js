@@ -3,6 +3,19 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/users';
 
+const resolveImgPath = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('/src') || url.startsWith('/assets') || url.startsWith('data:')) return url;
+    return `http://localhost:5000/uploads/products/${url}`;
+};
+
+const mapProduct = (p) => ({
+    ...p,
+    id: p._id || p.id,
+    image: p.image || resolveImgPath(p.images?.find((i) => i.isPrimary)?.url || p.images?.[0]?.url),
+    inStock: typeof p.inStock === 'boolean' ? p.inStock : (p.stockQuantity > 0 && p.status === 'active')
+});
+
 /**
  * Wishlist Store — Backend-first persistence.
  *
@@ -34,7 +47,8 @@ const useWishlistStore = create((set, get) => ({
             const { data } = await axios.get(`${API_URL}/wishlist`, {
                 headers: get()._authHeader(token),
             });
-            set({ items: data, loading: false });
+            const mapped = data.map(mapProduct);
+            set({ items: mapped, loading: false });
         } catch {
             set({ loading: false });
         }
@@ -53,7 +67,8 @@ const useWishlistStore = create((set, get) => ({
                     { headers: get()._authHeader(token) }
                 );
                 // data.wishlist is an array of populated product docs
-                set({ items: data.wishlist });
+                const mapped = data.wishlist.map(mapProduct);
+                set({ items: mapped });
                 return data.wishlisted;
             } catch (err) {
                 console.error('toggleWishlist error', err);
