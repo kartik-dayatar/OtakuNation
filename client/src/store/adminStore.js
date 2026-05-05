@@ -166,8 +166,8 @@ const useAdminStore = create((set, get) => ({
                     id: u._id,
                     name: `${u.firstName} ${u.lastName}`,
                     email: u.email,
-                    orders: 0, // In reality, we'd need an aggregate query, but we stub this for UI format
-                    spent: 0,
+                    orders: u.totalOrders || 0,
+                    spent: u.totalSpent || 0,
                     joined: joinedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                     status: u.isActive ? 'Active' : 'Inactive',
                     color: colors[index % colors.length]

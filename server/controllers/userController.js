@@ -434,7 +434,50 @@ const setDefaultAddress = async (req, res, next) => {
 // ────────────────────────────────────────────────────
 const getAllUsers = async (req, res, next) => {
     try {
-        const users = await User.find().select("-password").sort({ createdAt: -1 });
+        const users = await User.aggregate([
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "_id",
+                    foreignField: "user",
+                    as: "userOrders"
+                }
+            },
+            {
+                $addFields: {
+                    totalOrders: { $size: "$userOrders" },
+                    totalSpent: {
+                        $sum: {
+                            $map: {
+                                input: {
+                                    $filter: {
+                                        input: "$userOrders",
+                                        as: "order",
+                                        cond: {
+                                            $and: [
+                                                { $ne: ["$$order.status", "cancelled"] },
+                                                { $ne: ["$$order.status", "returned"] }
+                                            ]
+                                        }
+                                    }
+                                },
+                                as: "order",
+                                in: "$$order.totalAmount"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    password: 0,
+                    userOrders: 0
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            }
+        ]);
         res.json(users);
     } catch (err) {
         next(err);
