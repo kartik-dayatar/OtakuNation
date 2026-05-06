@@ -70,7 +70,7 @@ const orderSchema = new mongoose.Schema(
         },
         paymentStatus: {
             type:    String,
-            enum:    ["pending", "paid", "failed", "refunded"],
+            enum:    ["pending", "paid", "failed", "refund_initiated", "refunded"],
             default: "pending",
         },
         paymentReference:   { type: String, default: null },  // gateway tx ID

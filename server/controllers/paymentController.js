@@ -172,7 +172,17 @@ const verifyPayment = async (req, res, next) => {
                 }
             }
 
-            await sendOrderConfirmation(req.user, newOrder);
+            await sendOrderConfirmation(req.user, {
+                ...newOrder.toObject(),
+                items: snapshotItems.map(i => ({
+                    name:  i.productName,
+                    image: i.productImage,
+                    quantity: i.quantity,
+                    price: i.unitPrice
+                })),
+                shippingCost: shippingAmount,
+                discount: totalDiscount
+            });
             if (lowStockProducts.length > 0) {
                 await sendLowStockAlert(lowStockProducts);
             }

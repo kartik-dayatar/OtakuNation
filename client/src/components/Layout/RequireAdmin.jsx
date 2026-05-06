@@ -10,7 +10,7 @@ export default function RequireAdmin() {
     const { token, user } = useAuthStore();
 
     if (!token) {
-        return <Navigate to="/admin-login" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     if (user?.role !== 'admin') {

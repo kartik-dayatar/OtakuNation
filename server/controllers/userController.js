@@ -763,4 +763,3 @@ module.exports = {
     getCart, addToCart, updateCartItem, removeFromCart, clearCart, syncCart,
     getWishlist, toggleWishlist,
 };
-

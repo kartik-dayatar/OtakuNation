@@ -142,7 +142,7 @@ function AdminLayout() {
         }
     };
 
-    const handleLogout = () => { logout(); navigate('/admin-login'); };
+    const handleLogout = () => { logout(); navigate('/login'); };
 
     return (
         <div className="admin-layout">
